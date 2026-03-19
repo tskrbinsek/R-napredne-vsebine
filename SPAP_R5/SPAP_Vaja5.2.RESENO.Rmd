@@ -1,0 +1,258 @@
+---
+title: "SPAP Vaja 5.2 - Praktična uporaba funkcij"
+author: "TS"
+date: "2025-03-18"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+```
+
+
+# FUNKCIJE IN ZANKE MALO BOLJ PRAKTIČNO
+
+Zdaj bomo poskusili malo bolj praktično pogledati uporabo funkcij in zank.
+
+### Podatki:
+
+"**Begging behaviour of nestling barn owls (Tyto alba)**. Roulin and Bersier (2007) looked at nestlings’response to the presence of the mother and the father. Using microphones inside, and a video camera outside, the nests, they sampled 27 nests, studying vocal begging behaviour when the parents bring prey."
+
+Za ta primer bomo uporabili "pogajanje med sorojenci" - število klicev mladičev pegastih sov v 30-sekundnem intervalu tik po prihodu starša na gnezdo, deljeno s številom mladičev v gnezdu. Podatke so zbirali med 21:30 in 5:30 v dveh zaporednih nočeh. 
+
+Kot velikega analitika (beri: edinega ki bi znal to približno narediti), so te kolegi (beri: šef) določili, da analiziraš podatke in sproduciraš poročilo. Naročnik želi grafe "pogajanja med sorojenci" po času prihoda za vsako vsako gnezdo posebej. Imamo 27 gnezd, tako da boš moral/a narediti 27 grafov. Študija še vedno poteka, tako da lahko utemeljeno pričakuješ, da boš to moral/a delati tudi čez eno leto, verjetno za še znatno večje število gnezd. Ker se imaš rad/a, ne želiš delati gore grafov "na roke", ampak boš uporabil/a svoj R kung-fu.
+
+Najprej potrebujemo načrt!
+
+Korak 1. Uvozimo podatke in jih spoznamo. Pogledamo strukturo, spremenljivk, spremenimo v faktorje kar morajo biti faktorji, rešimo neumnosti...
+
+Korak 2. Narišemo graf za eno gnezdo. Naredimo, da je graf lep in da kaže točno to, kar želimo.
+
+Korak 3. Narišemo isti graf za drugo gnezdo - copy/paste večji del kode, pogledamo, kaj smo morali spremeniti.
+
+Korak 4. Vse skupaj zapakiramo v funkcijo, kjer so parametri stvari, ki smo jih morali med obema grafoma spreminjati. Ugotovimo, kako se izvozi slika. 
+
+Korak 5. 'Zazankamo' funkcijo preko vseh podatkov in v eni elegantni potezi naredimo vse slike za poročilo. :)
+
+
+Pa lepo po vrsti.
+
+
+### 1. UVOZIMO PODATKE
+
+Uvozimo podatke o pegastih sovah iz datoteke "Owls.txt" v objekt  'Owls'. 
+
+Ukaz je read.table(), kodo sem že napisal, da ne izgubljamo časa. Datoteke, ki so v delovnem folderju lahko pokličeš kar po imenu, ne rabiš opredeliti "poti" do njih. Ne pozabi povedati R-u, da so v prvi vrstici imena stolpcev (header) in ne pozabi, da je treba besedilo (npr ime datoteke) R-u dati v narekovajih. Parameter "stringsAsFactors" pove, ali želimo da stolpce z besedili že ob uvozu spremeni v faktorje.
+
+```{r}
+Owls = read.table("Owls.txt", sep="\t", header=T, stringsAsFactors = T)
+```
+
+### Naloga a 
+Poglej imena stolpcev, poglej strukturo podatkov (funkcije `str`, `names`). Poglej podatke.
+```{r}
+str(Owls)
+names(Owls)
+summary(Owls)
+```
+
+Parameter **ArrivalTime** pove čas, ko je starš prišel do gnezda s plenom.
+
+### 2. NARIŠEMO PODATKE ZA PRVO GNEZDO
+
+Da izvlečemo podatke za prvo gnezdo, moramo poznati imena posameznih gnezd iz stolpca 'Nest'.
+
+### Naloga b
+a) Poglej imena gnezd. Uporabiš lahko funkcijo levels() (ker gre za faktor). 
+b) Vsa imena gnezd shrani v nov 'character' vektor All_Nests (nadaljuj kodo v chunku spodaj). 
+
+Namig: posamezen stolpec lahko dobiš tako: data.frame$stolpec. 
+
+```{r}
+All_Nests = #tvoja koda
+
+All_Nests = levels(Owls$Nest)
+All_Nests
+```
+
+### Naloga c
+Zdaj naredi objekt s podatki **samo za prvo gnezdo** "AutavauxTV" in mu daj ime `My_Nest`. 
+
+Namig: podatke iz data frame-a dobimo z oglatimi oklepaji: data.frame[vektor_vrstic, vektor_stolpcev]. Če pred ali za vejico ni nič, pomeni "vse" (vrstice ali stolpci). Logična operacija za enakost je ==, ne pozabite na narekovaje okrog besedila.
+```{r}
+#tvoja koda tukaj
+My_Nest = Owls[Owls$Nest == "AutavauxTV",]
+```
+
+Zdaj pa narišimo graf. Kodo sem že vpisal. 
+
+```{r}
+p = ggplot(data=My_Nest, aes(x=ArrivalTime, y=NegPerChick, colour = FoodTreatment)) +
+  geom_point() + geom_smooth(fill=NA) +
+  xlab("čas prihoda") + ylab("pogajanje med sorojenci") +
+  ggtitle("AutavauxTV") +
+  theme_bw()
+
+print(p)
+```
+
+Za izris grafa smo tokrat uporabili funkcijo `print()` (nismo samo poklicali 'p'). Bomo kasneje pogledali zakaj je to pomembno.
+
+### 3. NARIŠEMO PODATKE ZA NASLEDNJE GNEZDO - DIZAJN UNIVERZALNE KODE
+
+Pomemben korak - dizajn **univerzalne kode** za funkcijo.
+
+Narišimo podatke za naslednje gnezdo. Ime gnezda je "Bochet". 
+
+### Naloga d
+V chunk-u je copy-paste kode za prejšnje gnezdo. SPREMENI KODO, da namesto gnezda "AutavauxTV" nariše gnezdo "Bochet". 
+```{r}
+#Modificiraj kodo, da bo narisala graf za gnezdo "Bochet"
+
+#Izvleci podatke za posamezno gnezdo
+My_Nest <- Owls[Owls$Nest == "AutavauxTV",]
+
+#Nariši
+p <-  ggplot(data=My_Nest, aes(x=ArrivalTime, y=NegPerChick, colour = FoodTreatment)) +
+  geom_point() + geom_smooth(fill=NA) +
+  xlab("čas prihoda") + ylab("pogajanje med sorojenci") +
+  ggtitle("AutavauxTV") +
+  theme_bw()
+
+print(p)
+```
+
+Tole zdaj zgleda precej univerzalno. Pomislite... pravzaprav moramo spremeniti samo ime gnezda in že lahko narišemo katero koli gnezdo. 
+
+Seveda bi bilo bolj elegantno, če bi to lahko naredili z enim ukazom. To preprosto naredimo tako, da kodo "zavijemo" v funkcijo, parametre, ki jih moramo spreminjati (v tem primeru ime gnezda) pa damo kot parameter funkcije. Zveni mnogo težje, kot dejansko je. :)
+
+
+### 4. NAREDIMO FUNKCIJO
+
+To že znate, za osvežitev:
+
+moja_funkcija <- function(parameter1, parameter2...){
+  ukaz1(parameter1)
+  ukaz2(parameter2)
+  ...
+  ...
+  return(izračunani parametri)
+}
+
+Znotraj zavitih oklepajev je koda, ki se izvaja. V spodnjem chunk-u je pripravljena osnova za funkcijo plot.nest, ki bo izrisala podatke za posamezno gnezdo.
+
+### Naloga e
+Skelet funkcije je že pripravljen. Na vsa mesta, kjer je treba ime gnezda spreminjati, vpiši vhodni parameter funkcije 'nest_name' (narekovajev ne rabiš, ker gre za objekt, ne besedilo). Potem zaženi chunk, da se naredi objekt s funkcijo.
+
+```{r}
+
+#' Nariše graf 'pogajanja med sorojenci' za gnezdo
+#' @param Owls Dataframe sove (dataframe)
+#' @param nest_name Ime gnezda (char)
+#' @return ggplot2 graf
+
+plot.nest <- function(Owls, nest_name){ #tu se začne koda fukcije
+
+    # Izvleci podatke za gnezdo nest_name
+    My_Nest <- Owls[Owls$Nest == nest_name,]
+    
+    # Nariši graf za nest_name
+    p <- ggplot(data=My_Nest, aes(x = ArrivalTime, 
+                                  y = NegPerChick, 
+                                  colour = FoodTreatment)) +
+      geom_point() + geom_smooth(fill=NA) +
+      xlab("čas prihoda") + ylab("pogajanje med sorojenci") +
+      ggtitle(nest_name) +
+      theme_bw()
+    
+    return(p) #izriši graf
+    
+} 
+
+```
+
+Tako, naša funkcija je narejena in jo lahko vidite v "Global Environment". Gremo jo testirat. 
+
+### Naloga f
+Testiraj funkcijo na tretjem gnezdu, "Champmartin".
+```{r}
+#tvoja koda tukaj
+plot.nest(Owls, "Champmartin")
+```
+
+Odlično! Zdaj pa moramo samo to ponoviti za vsa gnezda... s čim manj tipkanja. 
+
+### 5. ZANKANJE - PONAVLJANJE UKAZOV N-KRAT
+
+Za to uporabljamo zanko 'for':
+
+for (i in 1:27) {
+  nekaj naredi
+  nekaj naredi
+  nekaj naredi
+  ....
+}
+
+Tisto med zavitimo oklepaji se bo ponavljalo (v tem primeru 27x), v vsaki ponovitvi se bo spremenila vrednost 'i' na naslednji element vektorja (v tem primeru je vektor 1:27).
+
+Primer: izpišemo desetkrat "mali aligator", pred tem pa številko aligatorja.
+```{r}
+for(i in 1:10){
+  print(paste(i, "mali aligator"))
+}
+```
+
+### Naloga g
+Vektor imen gnezd že imamo - All_Nests. Naredi 'for' zanko, ki bo narisala naš graf za vsak element v vektorju.
+```{r}
+#tvoja koda tukaj
+for (nest in All_Nests) plot.nest(nest)
+```
+
+
+
+Uh. 27 grafov. Zdaj bi pa morali vsakega posebej izvoziti kot sliko? 
+
+### 6. IZVOZ
+
+No, enostavno to naredimo s funkcijo ggsave(), ki zadnji narisan graf zapiše v datoteko. Pri tem moramo sproti narediti vsa imena datotek... je kar enostavno. Samo vse skupaj vključimo v zanko in v eni potezi naredimo 27 slik.
+
+```{r}
+for (nest in All_Nests) { # začetek kode, ki se izvaja v zanki
+  
+  plot.nest(nest) #nariše graf
+  ggsave(file = paste(nest, ".png",sep="")) 
+  # 'file=' naredi ime datoteke iz imena gnezda ('nest')
+  # .png je en od grafičnih formatov (lahko bi bilo pdf, jpg...)
+  # funkcija "paste" samo zalepi skupaj ime gnezda in ".png",
+  # da naredi ime datoteke.
+  
+} # konec zanke
+
+```
+
+Voila. :) In če želimo spremeniti grafe? Nič lažjega, spremenimo funkcijo plot.nest in ponovno zaženemo. Nasledje leto z novimi podatki preprosto ponovno zaženemo in imamo poročilo pripravljeno.
+
+Za konec poglejmo še kako vse lahko rišemo podatke v R-u... 
+
+```{r}
+#to nas odpelje na spletno stran...
+browseURL("http://www.r-graph-gallery.com/")
+```
+
+Najlepše pri tem je, da lahko kopiramo kodo za graf, ki nam je všeč in jo samo popravimo, da dela na naših podatkih.
+
+*Naloga* 
+Najdi graf, ki ti je všeč in skopiraj kodo v chunk spodaj. Zaženi. Igraj se in poskusi spreminjati parametre.
+
+```{r}
+#tvoja koda tukaj. Če ne dela, poskusi kak drug graf. :)
+
+```
+
+The End, vaja 2. 
+
+

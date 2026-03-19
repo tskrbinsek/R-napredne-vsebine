@@ -1,0 +1,212 @@
+---
+title: "SPAP Vaja 5.1 - Uvod v programiranje"
+author: "TS"
+date: "2025-03-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(adegenet)
+
+```
+
+Cilj današnje vaje je narediti prve korake v izdelavo lastnih orodij v R-u. Uvod v pisanje funkcij.
+
+
+
+Ampak po vrsti. V R-u je bolj ali manj vse objekt, kar seveda velja tudi za funkcije.
+
+### Primer
+Ko funkcijo pokličemo na način `funkcija()`, z oklepaji, jo "zaženemo". Nekako tako:
+
+```{r}
+ggplot(data = pressure, aes(x = temperature, y=pressure)) + geom_point()
+```
+
+Funkcijo ggplot poznate in veste, kaj se je zgodilo. Zdaj pa poskusite zagnati samo `ggplot`, ne da bi dali oklepaje in argumente. 
+
+```{r}
+ggplot
+```
+To je dejansko "source" koda funkcije. Funkcija je v tem primeru napisana v kakšnem drugem programskem jeziku (verjetno C++), da je hitrejša in tukaj samo "kliče" kompajlirano (prevedeno) strojno kodo.
+
+Veliko paketov je pa napisano preprosto v R-u in lahko preprosto pogledamo v njihovo "drobovje". Če znamo, lahko funkcije tudi spremenimo, predelamo, popravimo...
+
+### Naloga 1
+Poglejte drobovje funkcije "df2genind". Funkcija je del paketa za populacijsko genetiko adegenet, ki je že naložen (v "setup" chunk-u).
+
+```{r}
+
+
+```
+
+## PISANJE LASTNIH FUNKCIJ
+
+Napisati funkcijo v R-u je preprosto. Naredimo objekt z imenom funkcije, povemo kaj so argumenti, napišemo "telo" funkcije in vrnemo rezultat:
+
+moja_funkcija <- function(argument1, argument2, ...{
+  ukaz 1
+  ukaz 2
+  ...
+  return(rezultat)
+}
+
+## Primer
+Napišimo enostavno funkcijo. Kot argumenta vzame dve števili in jih sešteje, rezultat vrne kot besedilo.
+
+```{r}
+vrni_vsoto <- function(stevilo1, stevilo2){
+  rezultat = stevilo1 + stevilo2 #argumenta sta postala objekta znotraj funkcije!
+  return(paste("Vsota je", rezultat)) #funkcija vrne besedilo z rezultatom.
+}
+```
+
+### Naloga 2
+Testiraj funkcijo, ki smo jo pravkar naredili.
+
+```{r}
+
+
+```
+
+Gremo zdaj tole malo povaditi.
+
+### Naloga 3
+Napiši funkcijo, ki kot argumente dobi dolžine katet, kot rezultat pa vrne dolžino hipotenuze. Funkcijo testiraj.
+
+```{r}
+
+
+```
+
+
+Funkcija lahko vedno vrne samo en objekt, včasih pa želimo dobiti več rezultatov. Kako bi to rešili? Nič lažjega, objekte "spakiramo" v dataframe ali list.
+
+Kar poskusite sami.
+
+### Naloga 4
+Napiši funkcijo, ki bo dobila polmer kroga, vrnila pa bo njegov premer, površino in obseg. Funkcijo testiraj.
+
+```{r}
+
+
+```
+
+
+# ZANKANJE
+
+## 'FOR' ZANKA
+
+Pogosto moramo posamezen korak ponoviti večkrat. Najbolj preprost ukaz za to je "for". Poglejmo primer.
+
+### Primer: 'for' zanka
+
+```{r}
+
+for(i in 1:20){
+  print(i * 4)
+}
+
+```
+
+Poskusite še sami.
+
+### Naloga 5
+
+'for' zanka izpelje operacijo za vsak element vektorja, ki ji ga damo. Spodaj bomo naredili vektor imen 'moja_imena'. Naredite 'for' zanko, ki bo za vsako ime izpisala "Moje ime je" in ime. Funkcija, ki lepi besedila skupaj, je 'paste()'.
+
+```{r}
+# naredimo vektor imen
+moja_imena <- c("Miha", "Anka", "Chuck Norris", "Meta", "Jože",
+                "Genoveva", "Traktorija", "Rambo", "Krümhilde")
+
+# primer uporabe "paste" funkcije
+print(paste("Moje ime je", moja_imena[8]))
+# v zankah/funkcijah je dobro eksplicitno uporabiti "print()" 
+# funkcijo za izpis na ekran, ker so drugače včasih težave.
+
+# tu naprej napišite vašo zanko
+
+
+
+
+```
+
+## 'WHILE' ZANKA
+
+'while' je podoben kot "for", ampak ponavlja naloge dokler je nek pogoj izpolnjen.
+
+### Primer, 'while' zanka
+```{r}
+x <- 1
+
+while (x <= 5) {
+  print(paste("x je", x))
+  x <- x + 1
+}
+
+```
+
+### Naloga 6
+Predelaj primer iz naloge 5 in uporabi 'while' stavek tako, da se imena izpisujejo, dokler ne pride zanka do imena "Rambo".
+
+Malo bolj komplicirano, nekaj nasvetov:
+- Potrebovali boste števec, recimo 'i', s katerim boste morali dobiti iz vektorja imen ime na poziciji 'i' (moja_imena[i]). To boste potrebovali tako za izpis imena na poziciji i kot za preverjanje pogoja v 'while'. 
+- Pred zanko boste morali števec nastaviti na 1 (prvi element vektorja). Temu pravimo 'inicializacija'. 
+- V vsakem koraku boste morali ta števec za ena povečati (i <- i + 1).
+
+```{r}
+
+
+```
+
+## ODLOČITVE - 'IF' stavek
+
+Pogosto se mora potek funkcije med izvajanjem prilagoditi. Najbolj pogosto uporabljan stavek je "if".
+
+if (pogoj1) {
+  naredi_nekaj
+} elseif (pogoj2) {
+  naredi_nekaj_drugega
+}
+else {
+  naredi_nekaj_tretjega
+}
+
+### Primer
+Naredili bomo funkcijo, ki bo preverila ali je ime dolgo ali kratko in naredila različen izpis. Če bo ime "Chuck Norris", nas bo na to opozorila! Funkcija nchar() nam preveri dolžino string-a (besedila).
+
+```{r}
+for(ime in moja_imena) {
+  if (ime == "Chuck Norris") {
+    print(paste0("Ime je ", ime, "!!!! NAJ TE BO STRAH!"))
+  } else if (nchar(ime) <= 4) {
+    print(paste0("Ime ", ime, " je kratko!"))
+  }
+  else{
+    print(paste0("Ime ", ime, " je dolgo!"))
+  }
+}
+
+```
+
+Poskusite sami.
+
+### Naloga 7
+Napiši funkcijo "deljivo3", ki bo za argument dobila številko, potem pa izpisala "Število je deljivo s 3", če je število deljivo s 3, "Število ni deljivo s 3", če ni deljivo in "Število je 3", če je število točno 3. Operacija %% vrne celoštevilčni ostanek deljenja (9 %% 3 vrne 0, 9 %% 4 vrne 1 itd.).
+
+```{r}
+# Primer operacije za ostanek, zaženi, da vidiš kako deluje.
+8 %% 3
+9 %% 3
+
+# Tvoja koda od tu dalje
+
+
+```
+
+Toliko o osnovah. Naslednja vaja malo bolj praktično. :-)

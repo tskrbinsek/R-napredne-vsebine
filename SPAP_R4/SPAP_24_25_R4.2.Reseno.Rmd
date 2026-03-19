@@ -1,0 +1,213 @@
+---
+title: 'SPAP R4.2 - Analiza dejanskih podatkov, FAO ribolov'
+author: "Tomaž Skrbinšek"
+date: "11. marec 2025"
+output: html_notebook
+---
+## UVOD IN PRIPRAVA ZA DELO
+
+Najboljši način učenja R-a je samostojno (ali "pretežno samostojno") delo. Zdaj imate dovolj osnov... vaša prva samostojna analiza podatkov. :-)
+
+Sami (z malo pomoči) boste raziskali podatke FAO (Food and Agricultural Organization, Združeni narodi) o morskem ribolovu. Analiza bo čisto deskriptivna - ostajamo na preprostih metodah, ampak kljub temu lahko dobimo veliko znanja!
+
+### Kako se lotiti naloge
+
+Vsako nalogo bomo delali po logičnih korakih, ki sem jih pripravil spodaj. Vsak korak je *zaključen, logičen del analize*. Korake boste delali samostojno v debati s sošolci in sošolkami okrog vas. Prvi ki bo nalogo v koraku rešil, jo bo na projektorju pokazal kolegom. Rešitev bomo razložili in komentirali in šli na naslednji korak.
+
+### Ponovljivo raziskovanje ("Reproducible Research")
+
+Ko uporabljamo Markdown, lahko seledimo paradigmi "ponovljivega raziskovanja" (ReproducibleResearch) - skupaj v logičnem redosledu ostanejo podatki, celotna analiza z vsemi odločitvami in razmišljanjem, rezultati in interpretacija rezultatov. Ideja je, da lahko kdorkoli analizo ponovi, pri tem pa razume odločitve in logiko vsakega koraka.
+
+V RMarkdown skripti zgleda to nekako tako:
+
+1. Zapišite KAJ želite narediti in ZAKAJ.
+2. Napišete chunk R KODE, ki to delo opravi.
+3. INTERPRETIRATE rezultat (če je smiselno), komentirate, spet na korak 1.
+
+Ampak najprej pripravimo projekt. Najprej nekaj o logiki.
+
+### Naloga A: Priprava projekta, priprava datoteke za analizo.
+- Naredite nov R Studio projekt v vašem študentskem folderju. Dajte mu ime AnalizaRibolov. 
+
+- V projektni mapi si naredite mapo "Data".
+- V projektni mapi si naredite mapo "Outputs".
+
+Skopirajte podatke (datoteka "FAO_Fishingdata_2021_Long.csv") v mapo "Data".
+
+### Naloga B: Naredite .Rmd datoteko
+- Naredite .Rmd datoteko (File/New File/R Markdown)
+- Dajte analizi smiselno ime, vpišite svoje ime.
+- Datoteko posnamite. Dajte ji ime "AnalizaRibolov.Rmd".
+
+
+### Naloga C: priprava knjižnic
+- V .Rmd datoteki je že nekaj kode, ki je tam samo kot "primer", da na nastane prazen list. Pobriši, ohrani "setup" chunk.
+
+- Naloži knjižnice. Za začetek dplyr in ggplot2, dalje bomo dodali po potrebi.
+
+- Skopiraj ta navodila (od ### CILJ NALOGE naprej) v tvojo datoteko.
+
+
+##### OD TU DALJE KOPIRAŠ V .RMD DATOTEKO!!!! ################
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(ggplot2)
+```
+
+## CILJ NALOGE
+
+*Cilj naloge* je raziskati globalne trende v morskem ribolovu. Kako se količina ulovljenih rib spreminja skozi čas v posameznih morskih območjih, katere države lovijo veliko, katere malo, kje so bile največje spremembe...
+
+*- "Ampak saj ne znamo R-a!!! Kako naj to sami rešujemo???"*
+Nič hudega. Imate 'Cheat Sheet'-e, R ima veliko pomoči na Internetu - Google, Chat GPT, Gemini... Tudi sam pogosto ne vem, kako bom analizo naredil - pomembno je, da vem KAJ želim narediti in da razumem metode (ne ukaze!), ki jih želim uporabiti. Tisti "kako" se potem (bolj ali manj) enostavno reši.
+
+### O podatkih
+
+V datoteki "FAO_Fishingdata_2021.csv" so podatki FAO ("Food and Agriculture Organization", Združeni narodi) o ulovu morskih rib, po državah (LandArea), oceanskih območjih (OceanArea) in letih (1950 - 2018). Podatki so v metričnih tonah ulovljenih rib. 
+
+### Naloga 1: Uvozite podatke
+
+Preberi podatke iz datoteke "FAO_Fishingdata_2021_Long.csv" in jih spravi v objekt "fishcatch". Ne pozabi, datoteka je v mapi "Data". Do datotek v podmapah projekte mape lahko pridete z "/", na primer "Data/Moja_Datoteka.csv". 
+
+```{r}
+fishcatch <- read.csv("Data/FAO_Fishingdata_2021_long.csv")
+```
+
+### Naloga 2: Preglejte uvoz in strukturo podatkov.
+
+2a - Poglejte, ali so podatki pravilno uvoženi. Poglejte strukturo. 
+2b - Ali je potrebno kaj pretvoriti v faktorje? Če da, potem to storite.
+2c - Ali je kaj manjkajočih podatkov?
+
+```{r}
+fishcatch$LandArea = factor(fishcatch$LandArea)
+fishcatch$OceanArea = factor(fishcatch$OceanArea)
+fishcatch$Species = factor(fishcatch$Species)
+```
+
+
+### Naloga 3: Kaj sploh imamo v stolpcih?
+
+Najprej poglejmo kaj imamo v spremenljivkah (stolpcih). 
+
+- Razišči kategorične spremenljivke. Koliko je česa in kje? levels, summary...
+
+```{r}
+summary(fishcatch$LandArea)
+summary(fishcatch$OceanArea)
+summary(fishcatch$Species)
+```
+
+- Kaj pa numerične spremenljivke?
+
+```{r}
+summary(fishcatch$year)
+summary(fishcatch$catch)
+```
+- mogoče katero spremenljivko poglej tudi z grafom?
+```{r}
+fishcatch %>% 
+  ggplot(aes(x=catch)) + geom_histogram()
+```
+
+
+### Naloga 3: Razmislek!
+
+Pred vsako analizo moramo razmisliti o podatkih in o analizi, ki jo nameravamo narediti. Potem se lotimo raziskovanja podatkov in izvajanja analize.
+
+3a - Katere so odvisne, katere neodvisne spremenljivke?
+
+Ko se lotevamo analize, je dobro, da razmislimo o PRIČAKOVANJIH. Podatki nikoli ne obstajajo v vakuumu, vedno imamo neko predznanje. 
+
+3b - Kakšna so vaša pričakovanja o morskem ribolovu v zadnjih slabih 70 letih? 
+
+
+### Naloga 4: Globalni trendi
+
+Poglejmo kako se je celotna količina ulovljenih rib spreminjala skozi čas. Numerično (group_by, summarise) in grafično (geom_line, geom_col...)
+
+```{r}
+fishcatch %>% 
+  group_by(year) %>% 
+  summarise(catch = sum(catch))
+```
+
+```{r}
+fishcatch %>% 
+  group_by(year) %>% 
+  summarise(catch = sum(catch)) %>% 
+  ggplot(aes(x=year, y = catch)) +
+  geom_line()
+```
+
+Ali vidimo kakšne trende ali spremembe?
+
+
+
+### Naloga 5
+
+Očitno je količina ulovljenih rib strmo naraščala, potem pa se nekje ustalila? Ampak 2/3 zemlje pokriva morje... je povsod enako?
+
+Razišči količino ulovljenih rib po morskih območjih (OceanArea).
+
+5a - Kje se je (skupen ulov) lovilo največ leta 1950? Kje leta 2018?
+5b - Nariši graf skupnega ulova po morskih območjih skozi čas. Pomagaj si z grafom iz prejšnje naloge.
+5c - Znaš morda graf na hitro prilagoditi, da kaže samo Pacifik?
+
+```{r}
+fishcatch %>% 
+  filter(year %in% c(1950, 2018)) %>% 
+  group_by(year, OceanArea) %>% 
+  summarise(catch = sum (catch))
+```
+
+
+```{r}
+fishcatch %>% 
+  group_by(year, OceanArea) %>%
+  #filter(OceanArea == "Pacific Ocean") %>% 
+  summarise(catch = sum(catch)) %>% 
+  ggplot(aes(x=year, y = catch, color=OceanArea)) +
+  geom_line()
+```
+### Naloga 6
+
+Ulov je se seveda razlikuje med državami - nekatere lovijo precej, nekatere malo. Pri spet tretjih se je ulov v zadnjih 50 letih zelo spremenil.
+
+- Katere države (10 držav) so največ lovile leta 1950? Katere 2018? Kje je največja razlika?
+- Razmisli, katere države so tu najbolj zanimive in nariši za njih grafe gibanja ribolova skozi čas!
+
+```{r}
+fishcatch %>% 
+  filter(year %in% c(1950, 2018)) %>% 
+  group_by(year, LandArea) %>% 
+  summarise(catch = sum(catch)) %>% 
+  arrange(desc(catch)) %>% 
+  slice_head(n=10)
+```
+
+
+### Naloga 7
+
+Kitajska je zelo povečala ribolov... kje? Nariši graf gibanja ulova rib, ki jih je ulovila Kitajska, skozi čas, po oceanskih območjih.
+
+```{r}
+fishcatch %>% 
+  filter(LandArea == "China") %>% 
+  ggplot(aes(x=year, y=catch, color = OceanArea)) +
+     geom_line()
+```
+ Kaj pa izven Pacifika, se je kaj spremenilo?
+
+```{r}
+fishcatch %>% 
+  filter(LandArea == "China",
+         OceanArea != "Pacific Ocean") %>% 
+  ggplot(aes(x=year, y=catch, color = OceanArea)) +
+     geom_line()
+```

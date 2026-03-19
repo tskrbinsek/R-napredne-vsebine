@@ -1,0 +1,309 @@
+---
+title: 'SPAP R3.2 - "Masiranje" podatkov v R-u'
+author: "Tomaž Skrbinšek"
+date: "4. marec 2025"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Tudi ko imamo čiste in lepe podatke (kako priti do tega bomo preskočili...), je naš prvi korak, da jih pogledamo, poskušamo razumeti strukturo, obliko... Naslednji korak je, da začnemo iskati vzorce v podatkih - kar pa je že naš prvi korak na poti od podatkov do znanja.
+
+Pa začnimo s podatki. Najprej poglejte, potem pa uvozite podatke iz "global_traffic_accidents.csv". 
+OPOMBA: imamo splošen "read.table()", imamo pa tudi specifične funkcije za posamezne oblike tekst datotek. read.csv()
+
+```{r}
+podatki <- read.csv("global_traffic_accidents.csv")
+```
+
+
+### Naloga 1
+
+Najprej poglejte strukturo nastalega objekta in poglejte podatke kot tabelo, da vidite, če je vse pravilno uvoženo. Funkcije za to že poznate.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO --> TOLE BOM ZDAJ NEHAL PISAT. :)
+```{r}
+str(podatki)
+```
+
+## METAPODATKI
+Metapodatki so "podatki o podatkih". Če sami pripravimo/pridobimo podatke, jih moramo prav tako opisati.
+
+The Global Traffic Accidents Dataset contains 10,000 records of traffic accident reports from various locations (10 big cities) worldwide. It provides crucial insights into accident patterns, causes, and contributing factors, helping researchers, policymakers, and AI developers analyze trends and improve road safety.
+
+The dataset is synthetically generated based on real-world accident trends from global reports. It simulates diverse geographic locations, weather conditions, and accident causes, making it ideal for academic and research purposes.
+
+### Dataset Features
+#### Column Name	Description
+* Accident ID	A unique identifier for each accident report.
+* Date	The date when the accident occurred (YYYY-MM-DD).
+* Time	The time of the accident (HH:MM format).
+* Location	The city and country where the accident happened.
+* Latitude	GPS latitude of the accident location.
+* Longitude	GPS longitude of the accident location.
+* Weather Condition	The weather at the time of the accident (e.g., Clear, Rain, Fog, Snow).
+* Road Condition	The condition of the road (e.g., Dry, Wet, Icy, Snowy).
+* Vehicles Involved	The number of vehicles involved in the accident.
+* Casualties	The total number of injuries and fatalities caused by the accident.
+* Cause	The primary reason for the accident (e.g., Speeding, Drunk Driving, Distracted Driving).
+
+
+### Naloga 2
+Razmislite, ali so v katerem stolpcu faktorji in jih pravilno deklarirajte v data frame-u.
+```{r}
+podatki$Weather.Condition = factor(podatki$Weather.Condition)
+podatki$Road.Condition = factor(podatki$Road.Condition)
+podatki$Cause = factor (podatki$Cause)
+podatki$Location = factor(podatki$Location)
+```
+
+### Datum, ura
+Čas je precej kompleksna zadeva. Ne bomo šli v podrobnosti, ampak bomo datum spremenili v datum (format Date). Uro bomo tudi pretvorili v hms (hours:minutes:seconds) format, za kar pa potrebujemo paket "hms".
+```{r}
+library(hms)
+podatki$Date = as.Date(podatki$Date)
+podatki$hmsTime = as_hms(paste0(podatki$Time, ":00"))
+```
+
+
+### Naloga 3
+Naredite povzetek podatkov, da dobimo približen občutek o njih.
+```{r}
+summary(podatki)
+```
+
+### Naloga 4
+Izpišite imena stolpcev, da bomo razmišljali o posameznih spremenljivkah in analizi...
+```{r}
+names(podatki)
+```
+
+Ali se spomniš kakšna je razlika med odvisnimi in neodvisnimi spremenljivakami? Razmisli... katere spremenljivke so odvisne, katere neodvisne?
+
+Gremo počasi raziskovati podatke. Najprej raziščimo naše neodvisne spremenljivke... strukturo, obliko itd.
+
+Čeprav bi lahko to vse počeli v "osnovnem" R-u, kot ste ga spoznavali do zdaj, obstajajo bližnjice. Predstavljamo paket: 'dplyr'(fanfare v ozadju). "Data pliers". Klešče za podatke. :) Izpod tastature istega Hadlya Wickhama, ki nam je naredil že ggplot2. Oboje je del "Tidyverse"-a, izjemno uporabne nadgradnje R-a.
+
+dplyr, kot že ime pove :), omogoča enostavno "masažo" podatkov v oblike, ki jih rabimo.
+
+### Naloga 4
+Naloži paket dplyr. Ko si ravno v akciji, naloži še paket ggplot2.
+```{r}
+#install.packages("dplyr") #tole je za doma... :)
+library(dplyr)
+library(ggplot2)
+```
+
+### dplyr in "glagoli"
+dplyr ima nekoliko svojevrstno logiko... funkcije lahko razumemo kot "glagole" - besede, ki nekaj naredijo. Magija, ki sledi (o tem malo kasneje), nam omogoča, da te glagole sestavimo v "stavke", ki nam naredijo kompleksna opravila. 
+
+Nekaj ključnih "glagolov" (funkcij), ki si jih je dobro zapomniti. Tukaj jih bom zapisal kot referenco (plonk):
+
+select() - izbere stolpce
+filter() - filtrira vrstice
+arrange() - sortira vrstice
+mutate() - naredi nove stolpce
+summarise() - naredi povzetke vrednosti
+group_by() - grupira podatke
+
+Ampak najprej moramo razširiti besednjak. Gremo po vrsti.
+
+## Izbiranje stolpcev s 'select'
+
+Uporabimo 'select', da izberemo stolpce. 
+
+### Primer
+```{r}
+podatki_analiza = select(podatki, Accident.ID, Date, Time, Location, 
+                         Casualties, Cause)
+```
+
+Preprosto, ne? Malo drugačna logika kot do zdaj, ampak precej prijazno. Lahko pa gremo še bolj preprosto... z ':' lahko izberemo vse stolpce od:do (glede na razporeditev v "names"). Poskusite... 
+
+### Naloga 5
+Naredi primer od zgoraj, ampak uporabi ':' da boš izbral vse stolpce od Accident.ID do Casualties, izpusti pa stolpca Latitude in Longitude.
+```{r}
+podatki_analiza = select(podatki, Accident.ID:Casualties, -Latitude, -Longitude)
+```
+
+Dalje postane še bolj pestro, ker lahko izberemo stolpce, ki se začnejo z nekim besedilom 'starts_with()', imajo besedilo (contains())... bodi dovolj, za več je help.
+
+Zdaj znamo izbirati stolpce, kaj pa z izbiranjem vrstic? Nič lažjega, ukaz 'filter()'.
+
+## 'filter' za izbiranje vrstic
+
+### Primer
+Gremo na primer iz objekta podatki izbrati samo prometne nesreče z več kot enim poškodovanim:
+```{r}
+multiple_casualties = filter(podatki, Casualties > 1)
+```
+
+Vidite logiko? Najprej podatki, potem kaj hočemo z njimi, vse z vejicami. Lahko uporabimo nam že znane logične operacije, kadar pa je logični "AND", pa lahko pogoje preprosto nizamo z vejicami.
+
+### Naloga 6
+Za primer naredite nov objekt 'multiple_casualties_drunk', v katerem bodo prometne nesreče z večimi poškodovanimi, ki so nastale zaradi vožnje pod vplivom alkohola.
+
+Namig: najprej naredi "levels()" za stolpec "Cause", da točno vidiš katere kategorije so v njem.
+```{r}
+levels(podatki$Cause)
+
+multiple_casualties_drunk = filter(podatki, Casualties > 1, 
+                                   Cause == "Drunk Driving")
+
+```
+
+Zdaj pa prihajamo do bistva. Moč dplyr je v sestavljanju ukazov. To naredimo s "pipe" operatorjem, ki se zapiše takole: %>%
+
+Dobimo ga enostavno s `<ctrl-shift-M>`.
+
+Pomeni: tisto z leve pošlji (%>%) na desno. Zdaj lahko začnemo ukaze pisati in brati v smeri, kot smo navajeni v "normalnem" življenju, od leve proti desni.
+
+Na primer, iz podatkov "filtriramo" samo prometne nesreče v Tokiju, izberemo stolpca Weather.Condition in Cause in naredimo povzetek.
+
+### Primer
+```{r}
+podatki %>% 
+  filter(Location == "Tokyo, Japan") %>%
+  select(Weather.Condition, Cause) %>% 
+  summary()
+```
+
+Pa poskusite. 
+
+### Naloga 7
+Izberite vse prometne nesreče, ki so se zgodile v Londonu, izberi stolpca Road.Condition in Cause in naredi kontingenčno tabelo (funkcija 'table())
+```{r}
+podatki %>% 
+  filter(Location == "London, UK") %>%
+  select(Road.Condition, Cause) %>% 
+  table()
+
+```
+
+## 'summarise' za vertikalne povzetke
+Zelo enostavne povzetke tabel lahko naredimo s funkcijo 'summarise()'... ni enako kot 'summary', ki ga že poznate! 
+
+Z njo enostavno izračunamo "vertikalne" povzetke stolpcev:  sd(), min(), max(), median(), sum(), n() (vrne DOLŽINO vektorja), first() (vrne prvo vrednost v vektorju), last() (vrne zadnjo vrednost v vektorju) and n_distinct() (število različnih vrednosti v vektorju).
+
+### Primer
+Na primer, gremo za primer od prej minimalno, povprečno in maksimalno število žrtev (Casualties):
+```{r}
+podatki %>% 
+  filter(Location == "London, UK") %>%
+  select(Road.Condition, Cause, Casualties) %>% 
+  summarise(MinCasualties = min(Casualties),
+            MeanCasualties = mean(Casualties),
+            MaxCasualties = max(Casualties),
+            N = n())
+```
+
+Tisti n() je povedal koliko je bilo zapisov!
+Poskusite sami. 
+
+### Naloga 8
+Izračunaj povprečno število žrtev in povprečno število udeleženih vozil pri nesrečah v Londonu, ki so nastale zaradi "Reckless Driving".
+
+```{r}
+podatki %>% 
+  filter(Location == "London, UK", Cause == "Reckless Driving") %>% 
+  summarise(mean_casualties = mean(Casualties), 
+            mean_vehicles = mean(Vehicles.Involved))
+
+```
+
+## 'mutate' za nove stolpce
+
+Včasih moramo narediti v tabeli nove stolpce, bodisi s preračunanjem starih ali neposredno. Funkcija 'mutate()'.
+
+### Primer
+Tako lahko na primer dodamo nov stolpec "Num", v katerem bo zaporedna številka nesreče:
+```{r}
+podatki = podatki %>% 
+  mutate(Num = 1:n()) #generira nov stolpec Num z zaporednimi številkami od 1 do števila vrstic (kar vrne funkcija n())
+```
+
+Poskusite sami.
+
+### Naloga 9
+V tabeli 'podatki' s funkcijo 'mutate()' naredite nov stolpec 'casualties_per_vehicle', v katerem bo število poškodovanih na vozilo.
+```{r}
+podatki = podatki %>% 
+  mutate(Casualties_per_vehicle = Casualties / Vehicles.Involved)
+```
+
+
+## 'group_by' za grupiranje podatkov po kategorični spremenljivki
+
+Zelo enostavno lahko podatke grupiramo po vrednostih v nekem stolpcu in potem računamo sumarične statistike s 'summarise'... group_by.
+
+### Primer
+Izračunajmo povprečno število žrtev prometnih nesreč v Londonu glede na vzrok prometne nesreče.
+```{r}
+podatki %>% 
+  filter(Location == "London, UK") %>%
+  group_by(Cause) %>% 
+  summarise(mean_casualties = mean(Casualties))
+```
+
+Zdaj pa sami
+
+### Naloga 10
+Izračunajte povprečno število žrtev in povprečno število udeleženih vozil za prometne nesreče, katerih vzrok je bil "Speeding", po lokacijah (Location).
+```{r}
+podatki %>% 
+  filter(Cause == "Speeding") %>% 
+  group_by(Location) %>% 
+  summarise(mean_casualties = mean(Casualties),
+            mean_vehicles = mean(Vehicles.Involved))
+```
+
+
+# arrange - sortiranje
+S funkcijo 'arrange' podatke zelo enostavno sortiramo po enem ali več stolpcih. Preprosto v naš cevovod dodamo arrange(stolpec1, stolpec2) in bo izhod sortiral po stolpcih od najmanjšega proti največjemu. 
+
+Če želimo obrniti vrstni red sortiranja (največji proti najmanjšemu) uporabimo funkcijo 'desc': arrange(stolpec1, desc(stolpec2)) - to bo sortiralo najprej po stolpcu1 od najmanjšega proti največjemu in potem po stolpcu dva od največjega proti najmanjšemu.
+
+## Naloga 11
+Kopiraj kodo iz prejšnje naloge, potem pa dodaj novo vrstico (s %>% ), ki bo sortira podatke po številu vključenih vozil od najmanjšega proti največjemu.
+```{r}
+podatki %>% 
+  filter(Cause == "Speeding") %>% 
+  group_by(Location) %>% 
+  summarise(mean_casualties = mean(Casualties),
+            mean_vehicles = mean(Vehicles.Involved)) %>% 
+  arrange(mean_vehicles)
+```
+
+### Primer
+Cevovod lahko zelo enostavno povežemo tudi v graf. Tako lahko na primer iz kodo iz prejšnjega chunka kar preprosto speljemo v graf:
+```{r}
+podatki %>% 
+  filter(Cause == "Speeding") %>% 
+  group_by(Location) %>% 
+  summarise(mean_casualties = mean(Casualties),
+            mean_vehicles = mean(Vehicles.Involved)) %>% 
+  arrange(mean_vehicles) %>% #arrange ni potreben, ampak ne moti
+  ggplot(aes(y = Location, x = mean_casualties)) +
+    geom_col()
+  
+```
+### Naloga 12
+Vzami kodo iz prejšnjega chunka in jo spremeni tako, da bo graf kazal razporeditev števila vključenih vozil za nesreče, kjer je bil vzrok vožnja pod vplivom alkohola.
+```{r}
+podatki %>% 
+  filter(Cause == "Drunk Driving") %>% 
+  group_by(Location) %>% 
+  summarise(mean_casualties = mean(Casualties),
+            mean_vehicles = mean(Vehicles.Involved)) %>% 
+  arrange(mean_vehicles) %>% #arrange ni potreben, ampak ne moti
+  ggplot(aes(y = Location, x = mean_vehicles)) +
+    geom_col()
+```
+
+
+
+
+
+

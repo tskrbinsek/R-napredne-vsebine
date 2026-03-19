@@ -1,0 +1,524 @@
+---
+title: "Izbrane vsebine, vaja 5 - Uvod v programiranje"
+author: "TS"
+date: "2025-03-19"
+output: html_document
+---
+
+Cilj današnje vaje je narediti prve korake v izdelavo lastnih orodij v R-u. Uvod v pisanje funkcij.
+
+Ampak najprej... kar v "setup" chunk-u naložite pakete, za katere mislite, da jih bomo potrebovali. Potem bomo po potrebi dopolnili.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(adegenet) #tole pustite, rabimo za en primer
+library(readr)
+
+```
+
+
+Ampak po vrsti. V R-u je bolj ali manj vse objekt, kar seveda velja tudi za funkcije.
+
+### Primer
+Ko funkcijo pokličemo na način `funkcija()`, z oklepaji, jo "zaženemo". Nekako tako:
+
+```{r}
+ggplot(data = pressure, aes(x = temperature, y=pressure)) + geom_point()
+```
+
+Funkcijo ggplot poznate in veste, kaj se je zgodilo. Zdaj pa poskusite zagnati samo `ggplot`, ne da bi dali oklepaje in argumente. 
+
+```{r}
+ggplot
+```
+To je dejansko "source" koda funkcije. Funkcija je v tem primeru napisana v kakšnem drugem programskem jeziku (verjetno C++), da je hitrejša in tukaj samo "kliče" kompajlirano (prevedeno) strojno kodo.
+
+Veliko paketov je pa napisano preprosto v R-u in lahko preprosto pogledamo v njihovo "drobovje". Če znamo, lahko funkcije tudi spremenimo, predelamo, popravimo...
+
+### Naloga 1
+Poglejte drobovje funkcije "df2genind". Funkcija je del paketa za populacijsko genetiko adegenet, ki je že naložen (v "setup" chunk-u).
+
+```{r}
+
+
+```
+
+## PISANJE LASTNIH FUNKCIJ
+
+Napisati funkcijo v R-u je preprosto. Naredimo objekt z imenom funkcije, povemo kaj so argumenti, napišemo "telo" funkcije in vrnemo rezultat:
+
+moja_funkcija <- function(argument1, argument2, ...{
+  ukaz 1
+  ukaz 2
+  ...
+  return(rezultat)
+}
+
+## Primer
+Napišimo enostavno funkcijo. Kot argumenta vzame dve števili in jih sešteje, rezultat vrne kot besedilo.
+
+```{r}
+vrni_vsoto <- function(stevilo1, stevilo2){
+  rezultat = stevilo1 + stevilo2 #argumenta sta postala objekta znotraj funkcije!
+  return(paste("Vsota je", rezultat)) #funkcija vrne besedilo z rezultatom.
+}
+```
+
+### Naloga 2
+Testiraj funkcijo, ki smo jo pravkar naredili.
+
+```{r}
+
+
+```
+
+Gremo zdaj tole malo povaditi.
+
+### Naloga 3
+Napiši funkcijo, ki kot argumente dobi dolžine katet, kot rezultat pa vrne dolžino hipotenuze. Funkcijo testiraj.
+
+```{r}
+
+
+```
+
+
+Funkcija lahko vedno vrne samo en objekt, včasih pa želimo dobiti več rezultatov. Kako bi to rešili? Nič lažjega, objekte "spakiramo" v dataframe ali list.
+
+Kar poskusite sami.
+
+### Naloga 4
+Napiši funkcijo, ki bo dobila polmer kroga, vrnila pa bo njegov premer, površino in obseg. Funkcijo testiraj.
+
+```{r}
+
+
+```
+
+
+
+# IGRANJE Z DEJANSKIMI PODATKI - UPORABA FUNKCIJ
+
+Preizkusimo zadevo v malo bolj kompleksni analizi. Ob tem bomo imeli tudi priložnost malo povaditi spretnosti iz dplyr-a, ggplota... :-)
+
+Najprej pa podatki....
+
+## PODATKI
+
+Podatki so o tem, kaj se dogaja s platičnimi odpadki. Številke so v tonah. 
+
+Datoteka: plastic-fate.csv
+
+vir: ourworldindata.org
+
+
+### Naloga 5 - uvoz podatkov
+Podatki so v datoteki plastic-fate.csv. Uvozi podatke v R objekt in preveri, ali so pravilno uvoženi. S funkcijo "glimpse()" lahko na hitro pogledate podatke, poglejte (odprite) jih pa tudi kot tabelo.
+
+```{r}
+plastic_fate = read_csv("plastic-fate.csv")
+glimpse(plastic_fate)
+```
+
+### Naloga 6.1
+V pravkar uvožene podakte `plastic_fate` dodaj stolpec `TotalPlastic`, v katerem bo skupna količina plastičnih odpadkov vseh kategorij.
+
+```{r}
+plastic_fate <- plastic_fate %>% 
+  mutate(TotalPlastic = Recycled + Incinerated + Mismanaged + Landfilled)
+```
+
+### Naloga 6.2
+Podatke `plastic_fate` uredi, tako da bodo ustrezali pravilom za urejene podatke (spomni se kaj to je!!!). Obrni (pivot) tabelo tako, da ohraniš stolpce Entity, Code, Year, v nov stolpec "Fate" zapišeš 'usodo' plastike (Recycled, Incinerated, Landfilled...), v stolpec "Quantity" pa količino odpadkov. 
+
+V datoteki Tabela.PNG imaš primer kako bi morala zgledati končna tabela - poglej!
+
+```{r}
+plastic_fate = plastic_fate %>% 
+  pivot_longer(Recycled:TotalPlastic, names_to = "Fate", values_to = "Quantity")
+
+```
+
+
+## Naloga 7
+Malo vaje za tvoj dplyr kung-fu. Za območje "Americas (excl. USA)" ugotovi, koliko so proizvedli odpadkov v CELOTNEM OBDOBJU 2000 - 2019, po kategorijah (Fate).
+
+```{r}
+plastic_fate %>% 
+  filter(Entity == "Americas (excl. USA)") %>% 
+  group_by(Fate) %>% 
+  summarise(Quantity = sum(Quantity))
+
+```
+
+
+### Naloga 8
+To isto naredi za "United States". Do zdaj že obvladata copy/paste. Kaj vse ste morali spremeniti?
+
+```{r}
+plastic_fate %>% 
+  filter(Entity == "United States") %>% 
+  group_by(Fate) %>% 
+  summarise(Quantity = sum(Quantity))
+
+```
+
+
+Zdaj bi pa to radi naredili še za nekatera druga območja, kar na hitro. Pa ne ljubi se nam v nedogled delati copy/paste.
+
+
+## IZDELAVA FUNKCIJE IZ SKRIPTE
+
+Zelo preprost način za izdelavo funkcije je iz R skripte. Ko ugotovimo, da bomo neko kodo z modifikacijami morali ponavljati večkrat, je precej bolj smiselno namesto neskončnega copy-paste-anja vse skupaj "zaviti" v funkcijo. Tako je enostavneje, bolj pregledno, pa še mimogrede lahko dodamo dodatno funkcionalnost ali popravimo napako.
+
+Imamo nekaj korakov:
+1. Narediti "ogrodje" funkcije.
+2. Zalepite vanj vašo skripto.
+3. Izberite argumente, ki jih boste dali funkciji in jih dajte v klic `function()`.
+4. Zamenjajte specifične vrednosti z imeni argumentov.
+5. Naredite imena argumentov bolj splošna.
+
+
+### Naloga 9
+
+Naredite funkcijo, s katero boste lahko izračunali količine odpadkov iz Naloge 8 za katerokoli območje. Funkcijo testirajte.
+
+```{r}
+moja_funkcija = function(Area){
+  plastic_fate %>% 
+  filter(Entity == Area) %>% 
+  group_by(Fate) %>% 
+  summarise(Quantity = sum(Quantity))
+} 
+
+moja_funkcija("United States")
+```
+
+## POIMENOVANJE FUNKCIJ
+
+Kakšno ime ste dali funkciji? Obstajajo pravila, ki se jih je smiselno držati. :-)
+
+Ali je funkcija "lm()" dobro poimenovana? Zakaj?
+
+
+## ARGUMENTI TAKO IN DRUGAČE
+
+Pri funkcijah imamo dva tipa argumentov:
+
+- podatkovni argumenti: podatki, ki jih bo funkcija uporabila
+
+- podrobnosti: povejo KAKO naj funkcija podatke uporabi.
+
+Argumente funkcije lahko enostavno pogledaš s funkcijo "args()". Poskusimo.
+
+
+### Naloga 10
+
+Funkcijo "mean" vsi poznate. Poglejte pomoč (help) za to funkcijo. 
+
+- Katere argumente ima?
+- Kateri so podatkovni, kateri podrobnosti?
+
+### Naloga 11
+
+Za podatke o plastiki izračunajte povprečje stolpca "Quantity", pri tem pa odrežite (trim) 10% ekstremnih vrednosti. 
+
+```{r}
+mean(plastic_fate$Quantity, trim = 0.1)
+```
+
+Razmislite, kako ste napisali funkcijo.
+- Ste argumente neposredno poimenovali ali kar dali na pričakovane pozicije?
+
+- Katere argumente ste poimenovali? Katere dali na pričakovane pozicije? Ali katerih sploh niste klicali?
+
+Praviloma "nujne" argumente (npr. podatke oz. "x" v funkciji mean) kar damo na pozicijo, kjer jih funkcija pričakuje, medtem ko podrobnosti, ki jih ne potrebujemo nujno (npr. "trim" v funkciji mean) poimenujemo. Je pa to seveda treba smiselno prilagoditi funkciji.
+
+### Naloga 10
+
+Poglej argumente funkcije "lm()". Potem pa še argumente funkcij "filter()" in "ggplot()". Na katerem mestu dobijo funkcije podatke? Ali se lahko "lm()" uporabi v pipe-u?
+
+```{r}
+args(lm)
+args(filter)
+args(ggplot)
+```
+
+### Naloga 11
+
+- Predelaj svojo funkcijo iz naloge 9, tako da bo imela smiselno ime in da jo bo mogoče uporabiti v pipe-u!
+
+- Na koncu dodaj stolpec z območjem (vrednost argumenta)
+
+- Testiraj tako, da najprej z dplyr-jem filtriraš samo podatke po letu 2010 in potem s cevovodom %>% s tvojo funkcijo izračunaš količine smeti za območje "United States".
+
+```{r}
+calculate_entity_plastic = function(data, area){
+  data %>% 
+    filter(Entity == area) %>% 
+    group_by(Fate) %>%
+    summarise(Quantity = sum(Quantity)) %>% 
+    mutate(Entity = area)
+} 
+
+
+plastic_fate %>% 
+  filter(Year > 2010) %>% 
+  calculate_entity_plastic("United States")
+```
+
+## ARGUMENTI IN PRIVZETE NASTAVITVE
+
+Če se spomnite, R pogosto poskuša čim manj težit - funkcijo lahko uporabljamo z minimalnim naborom argumentov, potem pa dodatno nastavimo tiste, ki jih želimo spremeniti z njihovih privzetih vrednosti.
+
+Za primer lahko pogledamo funkcijo "mean". Privzeto bo obravnavala manjkajoče vrednosti matematično korektno (če so prisotne, bo rezultat "NA") in ji takšnega vedenja ne rabimo posebej nastavljati. Lahko pa funkciji povemo na.rm = TRUE, da manjkajoče vrednosti pred izračunom povprečja nastavi.
+
+Poglejmo kako se to uredi. Ampak najprej gremo spet narediti eno funkcijo. :)
+
+### Naloga 12
+
+Naredite funkcijo, ki bo za posamezno območje narisala rast skupnih smeti skozi čas. Funkcija mora ob podatkih dobiti še dva argumenta:
+
+- barva (barva črte)
+- naslov (naslov grafa)
+
+Princip:
+- Najprej narišite graf, ki bo zgledal tako, kot želite.
+  - uporabljajte %>% 
+  - filtrirajte območje in skupne smeti
+  - narišite linijski graf.
+  - grafu dajte ime "Skupne smeti (ime območja)", kjer bo ime območja to, kar ste izbrali.
+  
+- "Zavijte" v funkcijo. Smiselno izvlečite argumente. Poskusite območje tudi vključiti v naslov! (funkcija "paste()" lepi skupaj besedila)
+
+Funkcijo testirajte. Potem pa jo poskusite zagnati tudi brez da opredelite argumenta "barva" in "naslov". Ali dela?
+
+```{r}
+draw_total_plastic <- function(data, area, naslov, barva){
+  data %>% 
+    filter(Entity == area,
+           Fate == "TotalPlastic") %>% 
+    ggplot(aes(x = Year, y = Quantity)) +
+      geom_line(color = barva) +
+      ggtitle(paste(naslov, area))
+}
+
+draw_total_plastic(plastic_fate, "United States", barva = "red", naslov = "Skupne smeti: ")
+draw_total_plastic(plastic_fate, "United States")
+```
+
+
+Argumente lahko enostavno nastavimo na privzete vrednosti. Zelo preprosto, v klicu funkcije povemo, kak bo argument, če ga ne opredelimo neposredno.
+
+Primer:
+
+moja_funkcija <- function(data, argument1 = FALSE, argument2 = "yellow"){
+  ....
+  ....
+}
+
+
+### Naloga 13
+
+Funkcijo iz naloge 12 predelaj, tako da nastaviš "naslov" in "barva" na smiselne privzete vrednosti. Testiraj.
+
+```{r}
+draw_total_plastic <- function(data, area, naslov = "Skupne smeti: ", 
+                               barva = "red"){
+  data %>% 
+    filter(Entity == area,
+           Fate == "TotalPlastic") %>% 
+    ggplot(aes(x = Year, y = Quantity)) +
+      geom_line(color = barva) +
+      ggtitle(paste(naslov, area))
+}
+
+draw_total_plastic(plastic_fate, "United States")
+```
+
+## ORGANIZACIJA FUNKCIJ
+
+Funkcije sicer lahko pustite v Rmarkdown skripti, bolj praktično pa je, če jih spravite v posebno ".R" datoteko, jih dokumentirate, potem pa to datoteko preprosto pokličete, ko funkcije potrebujete. Gremo po vrsti.
+
+### Naloga 14
+
+- Naredi novo .R skripto (File / New file / R Script)in jo posnami v delovni direktorij. Skripti daj ime "smetarske_funkcije.R".
+
+- V skripto prilepi končni verziji obeh "smetarskih" funkcij, ki si jih danes naredil/a. Funkciji malo preimenuj, da jih bomo prepoznali. Posnami skripto.
+
+- Pokliči smetarske_funkcije.R s funkcijo "source()". Kaj se zgodi?
+```{r}
+
+```
+
+
+## DOKUMENTACIJA FUNKCIJ
+
+Funkcije je potrebno dokumentirati - samo tako jih bomo čez nekaj časa spet znali uporabljati, pa tudi če jih bomo komu poslali, bo razumel, za kaj gre. Če pa se bo vaših "doma pečenih" funkcij kdaj nabralo dovolj, pa boste morda vse skupaj zapakirali in objavili čisto vaš R paket, da ga bo lahko svet uporabljal... :-)
+
+V R-u vse funkcije, ki so v Base R-u ali v objavljenih paketih, MORAJO biti dokumentirane.
+
+Poglejmo dokumentacijo za funkcijo "df2genind", za katero smo danes že pogledali izvorno kodo.
+```{r}
+?df2genind
+```
+
+Katere elemente vidiš?
+
+Funkcije lahko dokumentiraš čisto po domače - s komentarji # zapišeš pred njimi kaj delajo in kaj so parametri. Lahko pa uporabimo "profi" orodja in to naredimo tako kot treba, zelo enostavno.
+
+### Naloga 15
+V skripti "smetarske_funkcije.R" se postavi na prvo vrstico prve funkcije in klikni v menijih "Code / Insert Roxygen Skeleton". Že imaš "skelet" dokumentacije!
+
+Roxygen omogoča avtomatsko izdelavo "Help" datotek (kot jih dobite pri objavljenih funkcijah), če boste iz vaših funkcij želeli kdaj narediti paket. Tudi če tega ne nameravate, vas lepo vodi skozi proces dokumentiranja.
+
+- V prvo vrstico zapišite kratek naslov funkcije
+- Ena vrstica prazna
+- Napišite opis kako funkcija dela
+- Opišite parametre (@param)
+- Opišite kaj funkcija vrne (@returns)
+- Razmislite, če želite opisati/dodati še kaj drugega.
+
+### Naloga 16
+Naredite isto še za naslednjo funkcijo v skripti!
+
+
+Toliko za danes o funkcijah. Jih bomo pa od zdaj dalje kar uporabljali! :-)
+
+
+# ZANKANJE
+
+## 'FOR' ZANKA
+
+Pogosto moramo posamezen korak ponoviti večkrat. Najbolj preprost ukaz za to je "for". Poglejmo primer.
+
+### Primer: 'for' zanka
+
+```{r}
+
+for(i in 1:20){
+  print(i * 4)
+}
+
+```
+
+Poskusite še sami.
+
+### Naloga 17
+
+'for' zanka izpelje operacijo za vsak element vektorja, ki ji ga damo. Spodaj bomo naredili vektor imen 'moja_imena'. Naredite 'for' zanko, ki bo za vsako ime izpisala "Moje ime je" in ime. Funkcija, ki lepi besedila skupaj, je 'paste()'.
+
+```{r}
+# naredimo vektor imen
+moja_imena <- c("Miha", "Anka", "Chuck Norris", "Meta", "Jože",
+                "Genoveva", "Traktorija", "Rambo", "Krümhilde")
+
+# primer uporabe "paste" funkcije
+print(paste("Moje ime je", moja_imena[8]))
+# v zankah/funkcijah je dobro eksplicitno uporabiti "print()" 
+# funkcijo za izpis na ekran, ker so drugače včasih težave.
+
+# tu naprej napišite vašo zanko
+
+for(ime in moja_imena){
+  print(paste("Moje ime je", ime))
+}
+
+
+```
+
+## 'WHILE' ZANKA
+
+'while' je podoben kot "for", ampak ponavlja naloge dokler je nek pogoj izpolnjen.
+
+### Primer, 'while' zanka
+```{r}
+x <- 1
+
+while (x <= 5) {
+  print(paste("x je", x))
+  x <- x + 1
+}
+
+```
+
+### Naloga 6
+Predelaj primer iz naloge 5 in uporabi 'while' stavek tako, da se imena izpisujejo, dokler ne pride zanka do imena "Rambo".
+
+Malo bolj komplicirano, nekaj nasvetov:
+- Potrebovali boste števec, recimo 'i', s katerim boste morali dobiti iz vektorja imen ime na poziciji 'i' (moja_imena[i]). To boste potrebovali tako za izpis imena na poziciji i kot za preverjanje pogoja v 'while'. 
+- Pred zanko boste morali števec nastaviti na 1 (prvi element vektorja). Temu pravimo 'inicializacija'. 
+- V vsakem koraku boste morali ta števec za ena povečati (i <- i + 1).
+
+```{r}
+i <- 1
+
+while(moja_imena[i] != "Rambo") {
+  print(moja_imena[i])
+  i <- i + 1
+}
+
+```
+
+## ODLOČITVE - 'IF' stavek
+
+Pogosto se mora potek funkcije med izvajanjem prilagoditi. Najbolj pogosto uporabljan stavek je "if".
+
+if (pogoj1) {
+  naredi_nekaj
+} elseif (pogoj2) {
+  naredi_nekaj_drugega
+}
+else {
+  naredi_nekaj_tretjega
+}
+
+### Primer
+Naredili bomo funkcijo, ki bo preverila ali je ime dolgo ali kratko in naredila različen izpis. Če bo ime "Chuck Norris", nas bo na to opozorila! Funkcija nchar() nam preveri dolžino string-a (besedila).
+
+```{r}
+for(ime in moja_imena) {
+  if (ime == "Chuck Norris") {
+    print(paste0("Ime je ", ime, "!!!! NAJ TE BO STRAH!"))
+  } else if (nchar(ime) <= 4) {
+    print(paste0("Ime ", ime, " je kratko!"))
+  }
+  else{
+    print(paste0("Ime ", ime, " je dolgo!"))
+  }
+}
+
+```
+
+Poskusite sami.
+
+### Naloga 7
+Napiši funkcijo "deljivo3", ki bo za argument dobila številko, potem pa izpisala "Število je deljivo s 3", če je število deljivo s 3, "Število ni deljivo s 3", če ni deljivo in "Število je 3", če je število točno 3. Operacija %% vrne celoštevilčni ostanek deljenja (9 %% 3 vrne 0, 9 %% 4 vrne 1 itd.).
+
+```{r}
+# Primer operacije za ostanek, zaženi, da vidiš kako deluje.
+8 %% 3
+9 %% 3
+
+# Tvoja koda od tu dalje
+
+deljivo3 <- function(stevilo) {
+  if (stevilo == 3)
+    print("Število je 3!")
+  else if (stevilo %% 3 == 0)
+    print(paste("Število", stevilo, "je deljivo s 3."))
+  else
+    print(paste("Število", stevilo, "ni deljivo s 3."))
+}
+
+deljivo3(8)
+deljivo3(9)
+
+```
+
+
+Toliko o osnovah. Naslednjič bolj praktično. :-)

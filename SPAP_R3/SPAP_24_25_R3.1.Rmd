@@ -1,0 +1,235 @@
+---
+title: "SPAP - R, Vaja 3.1"
+author: "Tomaž Skrbinšek"
+date: "4. marec 2025"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# NABIRANJE KILOMETRINE V OSNOVAH IN GRAFIH
+
+Cilj današnje vaje je "trening" do sedaj pridobljenih znanj, bomo pa vmes poskusili tudi kaj novega. :)
+
+____________________________________________________________________________
+
+# Praktično - urejanje in vizualizacija "realnih" podatkov
+
+Znanje R-a bomo uporabili, da uredimo in vizualiziramo dejanske podatke. Gremo po vrsti.
+
+## Naloga 1
+
+Uvozi podatke iz datoteke 'squid.txt", ki se nahaja v našem delovnem folderju.
+
+```{r}
+squid <-  #preberi z diska, objektu daj ime 'squid', da bomo imeli vsi isto kodo
+```
+
+*Nekaj o podatkih* (neposredno): This is a set of data on the Gonadosomatic index (GSI, i.e., the weight of the gonads relative to total body weight) of squid (Graham Pierce, University of Aberdeen, UK, unpublished data). Measurements were taken from squid caught at various locations in Scottish waters in different months and years.
+
+
+### Naloga 2
+- Preveri, ali so podatki pravilno uvoženi, poglej strukturo.
+- Ali je potrebno kaj spremeniti v faktorje?
+
+```{r}
+
+```
+
+Faktorje je treba urediti in pravilno preimenovati. Bomo naprej uredili lokacijo.
+### Primer
+```{r}
+squid$Location = factor(squid$Location)
+levels(squid$Location) = c("Lok1", "Lok2", "Lok3", "Lok4")
+```
+
+Odprite si dataframe 'squid' in poglejte, kaj se je zgodilo.
+
+_______________________________
+
+Tako, zdaj pa sami:
+
+### Naloga 3
+Spremeni spol v faktor. Preimenuj "1", "2" v "Samec", "Samica". 
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+### Naloga 4
+Tudi mesec je faktor, ampak ordinalen (ordered), ker kategorije niso naklučno "nametane", ampak v vrstnem redu, tako da bodo veljale tudi logične operacije <, >, <=, >=. Spremeni mesec v faktor, ni pa potrebno nič preimenovati. Poglej pomoč za funkcijo "factor" in ugotovi, kako se razloži, da je faktor ordinalen.
+
+Še enkrat poglej strukturo objekta "squid"... ali je faktor "month" kaj drugačen od ostalih faktorjev?
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+### Naloga 5
+Spremeni leto (so štiri zaporedna leta) v faktor. Preimenuj "1", "2", itd v "Leto1", "Leto2",... itd. Ali je ta faktor tudi ordinalen? Če ja, ga tako tudi naredi.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+```{r}
+squid$Year = factor(squid$Year, ordered = T)
+levels(squid$Year) = c("Leto1", "Leto2", "Leto3", "Leto4")
+```
+
+
+### Naloga 6
+Zdaj ko smo uredili kategorične spremenljivke, lahko malo bolje raziščemo podatke. Prva stvar je vedno narediti povzetek vseh podatkov. Funkcije se verjetno spomniš. Poglej, razmisli, diskutiraj.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+### Naloga 7
+Večino lignjev so ujeli na Lokaciji 1 (Lok1). Poglej, ali je bil ulov enakomerno razporejen po vseh mesecih.
+- Naredi nov objekt `Lok1`, kjer bodo odfiltrirani samo podatki za Lokacijo 1
+- Poglej, ali imamo podatke enakomerno v vseh mesecih? Kaj pa v letih? Funkcija `table()`, poglej kako deluje.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+### Naloga 8
+Kaj pa lokacija 2, ali je tudi enakomerna razporeditev ulovljenih lignjev po mesecih in letih? Tole je mogoče rešiti z enim copy-paste in zelo malo tipkanja!
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+### Naloga 9
+Takšne kontingenčne tabele se lahko seveda delajo tudi za več spremenljivk. Poglej koliko lignjev je bilo ulovljenih na vsaki lokaciji, v vsakem letu, v vsakem letu. Uporabi kar celoten dataframe `squid`.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+_______________________________
+
+
+Ok, dovolj mečkanja podatkov, gremo risat. Zanima nas kako se GSI (gonadosomatski indeks) spreminja glede na mesece, leta, spol, lokacijo...
+
+### Naloga 10
+Nariši histogram razporejanja GSI.
+ - histogram potrebuje samo eno estetiko (x)
+ - ugani ime geoma.
+ 
+Tvoj histogram pospravi v objekt 'p'.
+ 
+ <!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+### Še nekaj o temah
+### Primer
+Tema (theme) grafa je vedno ena aktivna (privzeta) - zdaj tale siva ozadja. Ali bi lahko to nekako GLOBALNO spremenili, da bi temo (theme) grafa nastavili za vse grafe?
+```{r}
+theme_set(theme_bw())
+p
+```
+
+Posamezne elemente aktivne teme lahko preprosto nastavimo. Gremo recimo spremeniti črte v ozadju v rdeče:
+### Primer
+```{r}
+theme_update(panel.border = element_rect(linetype = "dashed", color = "red"))
+p
+```
+
+
+Podobno se lahko globalno nastavijo vsi grafični parametri za vse, kar niso podatki (barve osi, tipi pisav...)
+
+Nastavimo nazaj na osnovno temo...
+### Primer
+```{r}
+theme_set(theme_bw())
+```
+
+
+### Naloga 11
+Poglejte help za funkcijo "theme", da vidite, kaj vse se lahko nastavi.
+
+
+
+### Naloga 12
+Ali je kakšna razlika med samci in samicami? Nariši graf GSI po spolu, uporabi graf "škatla z brki" (boxplot).
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+### Naloga 13
+Kaj pa lokacija? So razlike? Nariši boxplot-e GSI po lokaciji. 
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+Hm... ali katere lokacije odstopajo?
+
+
+### Naloga 14
+Za vsako lokacijo ločeno nariši histogram (namig: lahko uporabiš paneliranje, facet_wrap()).
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+Uh... Lok2 in Lok4 imata zelo malo vzorcev, že prej smo videli, da so precej slabo razporejeni. Morda dajmo to raje ven.
+
+
+### Naloga 15
+Pripravi nov dataframe 'squid1', ki bo brez lokacij Lok2 in Lok4.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+Ali se GSI razlikuje po spolu in lokaciji?
+
+### Naloga 16
+Naredi boxplot GSI po spolu in paneliraj (facet) po lokaciji. Ne pozabi uporabiti 'squid1'!
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+Kako zgleda? Ali je videti, da bi imela lokacija pomemben vpliv?
+
+GSI nam daje vpogled v razmnoževalno aktivnost lignjev. Kateri parameter, ki ga imamo v podatkih bi po tvoj lahko vplival na GSI?
+
+### Naloga 17
+Nariši graf GSI po mesecih, uporabi stolpični diagram, potem pa paneliraj po spolu. 
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+Ok, ampak to bi bilo morda bolje na enem grafu, da vidimo skupaaj samce in samice? 
+
+### Naloga 18
+Namesto paneliranja uporabi različne barve za samce in samice. Bolj logičen je boxplot, tako da tudi geom_col zamenjaj za boxplot. Copy-paste je tvoj prijatelj!
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+### Naloga 19
+Zdaj pa še "spimpaj" graf, da bo lep.
+- copy/paste grafa od prej
+- spremeni barve - samec modra, samica rdeča. 
+  Moral(a) boš uporabiti ročno barvno lestvico (scale_fill_manual())
+- Daj osem smiselna imena (v slovenščini). Uporabi "cheat sheet" če ne veš kako.
+- Daj grafu smiseln naslov
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+Tako. Zdaj pa samo posnamemo tale graf na disk.
+
+### Naloga 20
+Posnami zadnje narisan graf na disk v datoteko "Moji_Lignji.png". Funkcija `ggsave()`.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO -->
+
+
+Za konec poglejmo še kako vse lahko rišemo podatke v R-u... 
+
+```{r}
+#to nas odpelje na spletno stran...
+browseURL("http://www.r-graph-gallery.com/")
+```
+
+Najlepše pri tem je, da lahko kopiramo kodo za graf, ki nam je všeč in jo samo popravimo, da dela na naših podatkih.
+
+### Naloga 21
+Najdi graf, ki ti je všeč in skopiraj kodo v chunk spodaj. Zaženi. Igraj se in poskusi spreminjati parametre.
+
+```{r}
+
+```
+
+

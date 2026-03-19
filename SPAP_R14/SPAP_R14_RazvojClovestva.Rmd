@@ -1,0 +1,303 @@
+---
+title: "SPAP R14"
+author: "TS"
+date: "2025-05-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# nalaganje knjižnic
+# dobra praksa je knjižnice vedno naložiti v 'setup' chunk-u, tudi če jih bomo uporabljali kasneje.
+
+
+library(readr)
+library(tidyverse)
+
+theme_set(theme_bw()) #tole nastavi ggplot temo na theme_bw za vse grafe
+```
+
+Danes bomo raziskovali globalne trende razvoja človeštva. Vadili bomo urejanje podatkov, malo ponovili "pivotiranje" in združevanje tabel in "masiranje" podatkov z dplyr-jem. Ob tem pa bomo podatke poskusili postaviti tudi v prostorski kontekst, da naredimo prve korake v vizualizacijo prostorskih podatkov v R-u.
+
+Ampak najprej podatki. To že znate sami uvoziti in pogledati. Kar hrabro. :-)
+
+____________________________________
+
+## Uvoz podatkov
+
+
+### Naloga 1
+Uvozi podatke "HDR25_Time_Series.csv" v objekt "HDR25".
+- Poglej podatke in njihovo strukturo.
+- Ali su podatki urejeni (tidy)?
+- Je jasno kaj je kaj in za kaj gre?
+
+```{r}
+HDR25 = #tvoja koda
+```
+
+
+Podatkom o podatkih se reče "metapodatki". Brez njih kompleksne podatke težko razumemo.
+
+### Naloga 2
+Podatki, ki smo jih uvozili, so iz novega "Human Development Report"-a, ki so ga pred tremi tedni objavili Združeni narodi. Vključujejo časovne serije podatkov ključnih kazalnikov družbenega razvoja za vse države. Poglej na spletno stran, za kaj gre (https://hdr.undp.org/), poglej metapodatke (v Excel datoteki).
+
+____________________________________
+
+
+## Priprava podatkov za analizo
+
+Poglejmo "Human Development Index":
+
+"The Human Development Index (HDI) is a summary measure of average achievement in key dimensions of human development: a long and healthy life, being knowledgeable and having a decent standard of living. The HDI is the geometric mean of normalized indices for each of the three dimensions.
+
+The health dimension is assessed by life expectancy at birth, the education dimension is measured by mean of years of schooling for adults aged 25 years and more and expected years of schooling for children of school entering age. The standard of living dimension is measured by gross national income per capita. The HDI uses the logarithm of income, to reflect the diminishing importance of income with increasing GNI. The scores for the three HDI dimension indices are then aggregated into a composite index using geometric mean. Refer to Technical notes for more details.
+
+The HDI can be used to question national policy choices, asking how two countries with the same level of GNI per capita can end up with different human development outcomes. These contrasts can stimulate debate about government policy priorities."
+
+### Naloga 3
+
+Uredi podatke HDI za analizo - vse stolpce, ki se nanašajo na HDI. Poglej metapodatke. 
+
+Po korakih... najprej moramo letnice iz imen stolpcev spraviti v svoj stolpec "year" in ločiti parametre v nov stolpec "parameter"
+
+Namig: select, pivot_longer. 
+
+- Razmisli, kako bi leto ločili od indeksa (npr. "hdi_1990" postaneta dve vrednosti, "hdi" in "1990"). Novim stolpcem daj ime "parameter" in "year". 
+- Leto pretvori v številko. 
+
+Rezultat bi moral zgledati takole:
+
+iso3    country   hdicode region  hdi_rank_2023 parameter   year value
+  <chr> <chr>       <chr>   <chr>          <dbl> <chr> <dbl> <dbl>
+1 AFG   Afghanistan Low     SA               181 hdi    1990 0.285
+2 AFG   Afghanistan Low     SA               181 hdi    1991 0.291
+3 AFG   Afghanistan Low     SA               181 hdi    1992 0.301
+4 AFG   Afghanistan Low     SA               181 hdi    1993 0.311
+5 AFG   Afghanistan Low     SA               181 hdi    1994 0.305
+6 AFG   Afghanistan Low     SA               181 hdi    1995 0.329
+...
+
+```{r}
+hdi = #tvoja koda
+```
+
+### Naloga 4
+
+Tole še vseeno ne ustreza pravilom za urejenost podatkov - ni vsak parameter v svojem stolpcu! Uredi -  posamezne parametre loči v svoje stolpce. pivot_wider, poskusi. Rezultat bi moral zgledati takole:
+
+  iso3  country     hdicode region hdi_rank_2023  year   hdi    le   eys   mys gnipc
+  <chr> <chr>       <chr>   <chr>          <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+1 AFG   Afghanistan Low     SA               181  1990 0.285  45.1  2.94 0.872 3642.
+2 AFG   Afghanistan Low     SA               181  1991 0.291  45.5  3.23 0.915 3193.
+3 AFG   Afghanistan Low     SA               181  1992 0.301  46.6  3.52 0.959 2990.
+4 AFG   Afghanistan Low     SA               181  1993 0.311  51.0  3.81 1.00  1994.
+5 AFG   Afghanistan Low     SA               181  1994 0.305  51.0  4.10 1.05  1425.
+6 AFG   Afghanistan Low     SA               181  1995 0.329  52.1  4.40 1.09  2035.
+...
+
+Če želiš, lahko neposredno nadaljuješ pipeline zgoraj (copy/paste v chunk spodaj), lahko pa nadaljuješ iz objekta, ki si ga ustvaril/a v prejšnjem chunku. Novemu objektu daj ime "hdi1".
+
+```{r}
+hdi1 = hdi %>%  #tvoja koda
+```
+
+Dobro, zdaj se lahko začnemo s podatki igrati in jih raziskovati.
+
+____________________________________
+
+## Raziskovanje podatkov
+
+### Naloga 5
+
+Nariši graf gibanja HDI za ves svet od leta 1990 do 2023. Uporabi linijski graf.
+
+Ali kaj opaziš? Poskusi razložiti.
+
+```{r}
+ #tvoja koda
+```
+
+### Naloga 6
+
+HDI je sestavljen iz treh komponent (dimenzij). 
+
+Na katerih komponentah je prišlo do sprememb, ki so povzročile to spremembo trenda? 
+
+Nariši vse tri.
+
+```{r}
+# graf le, Life expectancy
+
+# Graf mys, Mean years of schooling
+
+# Graf gnipc, GNI per capita
+
+```
+
+### Naloga 7
+
+Ali so bile posamezne regije bolj prizadete? Nariši globalno gibanje HDI po delih sveta tako, da bo imela vsaka regija svojo barvo črte.
+
+Namig: posamezne regije imajo svoje iso kode in imena. Poglej podatke.
+Namig2: iso kode in imena lahko dobiš s funkcijo "unique()". Potem lahko copy/paste-aš...
+Namig3: uporabi %in%
+
+```{r}
+hdi1 %>% #tvoja koda
+  
+```
+
+Ok... malo se nam svita tudi kje... ampak za resnično razumevanje prostorske informacije potrebujemo zemljevid.
+
+
+## Kako preprosto pokazati prostorske informacije v R-u
+
+
+Pogosto podatke želimo razumeti v geografskem kontekstu. Analiza prostorskih podatkov v R-u je razmeroma zahtevna tema, ki zahteva tudi nekaj znanja o Geografskih Informacijskih Sistemih (GIS) in kartografiji, ampak osnovno postavljanje pik in poligonov na karto je pa razmeroma preprosto.
+
+Odličen paket za uporabo prostorskih podatkov je "sf". Kar naložimo. Naložili bomo tudi paket "mapview", ki je odličen za hitro in (razmeroma) neboleče pregledovanje prostorskih informacij.
+
+```{r}
+library(sf)
+library(mapview)
+```
+
+
+### Primer: izdelava preprostega objekta s prostorskimi podatki
+
+Naredimo preprost dataframe, s katerim se lahko igramo. Funkcija "tribble" je preprost način za izdelavo majhnih in preprostih dataframe-ov, ki jih včasih potrebujemo. Iz "Google Maps" sem potegnil geografske koordinate treh točk v bližini in iz njih naredil dataframe:
+
+```{r}
+okrog_nas = tribble(
+  ~lat,              ~lon,              ~opis,
+  46.05119292197193, 14.469894090203542, "Mi smo tu! :-)",
+  46.055929921062834, 14.47701706353235, "Gostilna, Cankarjev vrh",
+  46.04926031276579, 14.474717511978374, "BF Dekanat"
+  
+)
+```
+
+Poglejmo zdaj to na karti. Najprej moramo iz tega narediti "Simple Feature" prostorski objekt. Ukaz za to je st_as_sf():
+
+```{r}
+okrog_nas_sf = st_as_sf(okrog_nas, coords = c("lon", "lat"), crs = 4326)
+```
+
+Morali smo povedati koordinatni sistem (CRS = coordinate reference system, v tem primeru GPS oziroma "WGS84") in v katerih stolpcih so koordinate.
+
+### Naloga 8
+
+Razišči objekt "okrog_nas_sf". V čem se razlikuje od objekta "okroga_nas"? Kako zgleda? Debata!
+
+
+### Preprosto risanje prostorskih podatkov
+
+ggplot2 lahko riše sf objekte.
+
+```{r}
+okrog_nas_sf %>% 
+  ggplot() + geom_sf()
+```
+Lahko mu za ozadje damo tudi "basemap" (npr Google Maps...), ampak to zahteva dodatne knjižnice in se s tem danes ne bomo ukvarjali. Tole je zdaj malo dolgčas, elegantneje narišemo s knjižnico "mapview" na dinamični karti.
+
+```{r}
+#library(mapview)
+mapview(okrog_nas_sf, label = okrog_nas_sf$opis)
+```
+
+
+### Naloga 9
+
+V delovni mapi imamo globalne podatke o administrativnih mejah "world-administrative-boundaries.shp". Podatki so že v GIS formatu in imajo zabeležen koordinatni sistem. Poskusite naložiti v R objekt. Ukaz je "st_read()" (del paketa sf za prostorske podatke).
+
+```{r}
+world_boundaries =  #tvoja koda
+```
+Poglejte si objekt, ki ste ga naredili. Običajen data frame, ki pa ima zraven stolpec "geometry", v katerem so geografski podatki.
+
+### Naloga 10
+
+Nariši objekt, ki si ga pravkar naredil/a, z ggplotom, potem pa še z "mapview"-jem.
+
+```{r}
+ #tvoja koda, ggplot
+```
+
+```{r}
+ #tvoja koda, mapview
+```
+
+Ok, zdaj si pa lahko HDI podatke tudi prostorsko vizualiziramo.
+
+## Sestavljanje prostorskih podatkov s tabelaričnimi
+
+sf objekti so pravzaprav (malo drugačni) dataframe-i, tako da jih čisto gladko "masiramo" z istimi orodji kot ostale dataframe. Poglejmo kako je HDI prostorsko razporejen.
+
+### Naloga 11
+
+- Pripravi objekt "hdi_2023", kjer bo filtrirano samo leto 2023
+- pripravi nov objekt "world_hdi2023", v katerem sf objektu "world_boundaries" dodaš podatke za HDI iz objekta "hdi_2023".
+- ODSTRANI STOLPEC "country"! Povzroča probleme. :-)
+
+```{r}
+hdi_2023 = hdi1 %>%  #tvoja koda
+
+world_hdi2023 = world_boundaries %>%  #tvoja koda
+```
+
+
+### Naloga 12
+
+- Nariši world_hdi2023 z ggplot2.
+- Simboliziraj barve ploskev z vrednostjo HDI.
+- Na karti prikaži Afriko in bližnji vzhod.
+
+Lahko se poigraš z barvnno lestvico, da dobiš lepo karto.
+
+```{r}
+ #tvoja koda
+    
+```
+
+### Naloga 13
+
+Isto mapo naredi z "mapview". Sam/a ugotovi kako se mapira hdi na barvo ploskve.
+
+```{r}
+ #tvoja koda
+```
+
+
+### Naloga 14
+
+Imamo 33 let podatkov, v vsem tem času je HDI rastel. Lahko pa predvidevamo, da ni povsod rastel enako hitro.
+
+- Naredi nov dataframe hdi_change in za vsako državo v novem stolpcu "delta_hdi" izračunaj razliko med HDI v 1990 in tistim v 2023.
+- NAMIG: potreboval/a boš funkciji filter() in pivot_wider()!
+
+
+```{r}
+hdi_change = hdi1 %>%  #tvoja koda
+```
+
+
+### Naloga 15
+
+hdi_change prilepi k geografskim podatkom (world_boundaries) in nariši. Kje je najmanjši in kje največji človeštva v zadnjih 33 letih? 
+
+```{r}
+world_hdi_change = world_boundaries %>%  #tvoja koda, združi podatke
+```
+
+```{r}
+ #tvoja koda, nariši!
+```
+
+
+Dobra praksa na koncu markdown skripte vedno dati "sessionInfo".
+
+```{r}
+sessionInfo()
+```
+

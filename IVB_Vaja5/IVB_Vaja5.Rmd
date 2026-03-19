@@ -1,0 +1,293 @@
+---
+title: "Izbrane vsebine, vaja 5 - Uvod v programiranje"
+author: "TS"
+date: "2025-03-19"
+output: html_document
+---
+
+Cilj današnje vaje je narediti prve korake v izdelavo lastnih orodij v R-u. Uvod v pisanje funkcij.
+
+Ampak najprej... kar v "setup" chunk-u naložite pakete, za katere mislite, da jih bomo potrebovali. Potem bomo po potrebi dopolnili.
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(adegenet) #tole pustite, rabimo za en primer
+
+```
+
+
+Ampak po vrsti. V R-u je bolj ali manj vse objekt, kar seveda velja tudi za funkcije.
+
+### Primer
+Ko funkcijo pokličemo na način `funkcija()`, z oklepaji, jo "zaženemo". Nekako tako:
+
+```{r}
+ggplot(data = pressure, aes(x = temperature, y=pressure)) + geom_point()
+```
+
+Funkcijo ggplot poznate in veste, kaj se je zgodilo. Zdaj pa poskusite zagnati samo `ggplot`, ne da bi dali oklepaje in argumente. 
+
+```{r}
+ggplot
+```
+To je dejansko "source" koda funkcije. Funkcija je v tem primeru napisana v kakšnem drugem programskem jeziku (verjetno C++), da je hitrejša in tukaj samo "kliče" kompajlirano (prevedeno) strojno kodo.
+
+Veliko paketov je pa napisano preprosto v R-u in lahko preprosto pogledamo v njihovo "drobovje". Če znamo, lahko funkcije tudi spremenimo, predelamo, popravimo...
+
+### Naloga 1
+Poglejte drobovje funkcije "df2genind". Funkcija je del paketa za populacijsko genetiko adegenet, ki je že naložen (v "setup" chunk-u).
+
+```{r}
+
+
+```
+
+## PISANJE LASTNIH FUNKCIJ
+
+Napisati funkcijo v R-u je preprosto. Naredimo objekt z imenom funkcije, povemo kaj so argumenti, napišemo "telo" funkcije in vrnemo rezultat:
+
+moja_funkcija <- function(argument1, argument2, ...{
+  ukaz 1
+  ukaz 2
+  ...
+  return(rezultat)
+}
+
+## Primer
+Napišimo enostavno funkcijo. Kot argumenta vzame dve števili in jih sešteje, rezultat vrne kot besedilo.
+
+```{r}
+vrni_vsoto <- function(stevilo1, stevilo2){
+  rezultat = stevilo1 + stevilo2 #argumenta sta postala objekta znotraj funkcije!
+  return(paste("Vsota je", rezultat)) #funkcija vrne besedilo z rezultatom.
+}
+```
+
+### Naloga 2
+Testiraj funkcijo, ki smo jo pravkar naredili.
+
+```{r}
+
+
+```
+
+Gremo zdaj tole malo povaditi.
+
+### Naloga 3
+Napiši funkcijo, ki kot argumente dobi dolžine katet, kot rezultat pa vrne dolžino hipotenuze. Funkcijo testiraj.
+
+```{r}
+
+
+```
+
+
+Funkcija lahko vedno vrne samo en objekt, včasih pa želimo dobiti več rezultatov. Kako bi to rešili? Nič lažjega, objekte "spakiramo" v dataframe ali list.
+
+Kar poskusite sami.
+
+### Naloga 4
+Napiši funkcijo, ki bo dobila polmer kroga, vrnila pa bo njegov premer, površino in obseg. Funkcijo testiraj.
+
+```{r}
+
+
+```
+
+
+
+# IGRANJE Z DEJANSKIMI PODATKI - UPORABA FUNKCIJ
+
+Preizkusimo zadevo v malo bolj kompleksni analizi. Ob tem bomo imeli tudi priložnost malo povaditi spretnosti iz dplyr-a, ggplota... :-)
+
+Najprej pa podatki....
+
+## PODATKI
+
+Podatki so o tem, kaj se dogaja s platičnimi odpadki. Številke so v tonah. 
+
+Datoteka: plastic-fate.csv
+
+vir: ourworldindata.org
+
+### Naloga 5 - uvoz podatkov
+Podatki so v datoteki plastic-fate.csv. Uvozi podatke v R objekt "plastic_fate" in preveri, ali so pravilno uvoženi. S funkcijo "glimpse()" lahko na hitro pogledate podatke, poglejte (odprite) jih pa tudi kot tabelo.
+
+```{r}
+plastic_fate = #----- #uvozi podatke 
+```
+
+### Naloga 6.1
+V pravkar uvožene podakte `plastic_fate` dodaj stolpec `TotalPlastic`, v katerem bo skupna količina plastičnih odpadkov vseh kategorij.
+
+```{r}
+
+```
+
+### Naloga 6.2
+Podatke `plastic_fate` uredi, tako da bodo ustrezali pravilom za urejene podatke (spomni se kaj to je!!!). Obrni (pivot) tabelo tako, da ohraniš stolpce Entity, Code, Year, v nov stolpec "Fate" zapišeš 'usodo' plastike (Recycled, Incinerated, Landfilled...), v stolpec "Quantity" pa količino odpadkov. 
+
+V datoteki Tabela.PNG imaš primer kako bi morala zgledati končna tabela - poglej!
+
+```{r}
+
+```
+
+
+## Naloga 7
+Malo vaje za tvoj dplyr kung-fu. Za območje "Americas (excl. USA)" ugotovi, koliko so proizvedli odpadkov v CELOTNEM OBDOBJU 2000 - 2019, po kategorijah (Fate).
+
+```{r}
+
+```
+
+
+### Naloga 8
+To isto naredi za "United States". Do zdaj že obvladata copy/paste. Kaj vse ste morali spremeniti?
+
+```{r}
+
+
+```
+
+
+Zdaj bi pa to radi naredili še za nekatera druga območja, kar na hitro. Pa ne ljubi se nam v nedogled delati copy/paste.
+
+
+## IZDELAVA FUNKCIJE IZ SKRIPTE
+
+Zelo preprost način za izdelavo funkcije je iz R skripte. Ko ugotovimo, da bomo neko kodo z modifikacijami morali ponavljati večkrat, je precej bolj smiselno namesto neskončnega copy-paste-anja vse skupaj "zaviti" v funkcijo. Tako je enostavneje, bolj pregledno, pa še mimogrede lahko dodamo dodatno funkcionalnost ali popravimo napako.
+
+Imamo nekaj korakov:
+1. Narediti "ogrodje" funkcije.
+2. Zalepite vanj vašo skripto.
+3. Izberite argumente, ki jih boste dali funkciji in jih dajte v klic `function()`.
+4. Zamenjajte specifične vrednosti z imeni argumentov.
+5. Naredite imena argumentov bolj splošna.
+
+
+### Naloga 9
+
+Naredite funkcijo, s katero boste lahko izračunali količine odpadkov iz Naloge 8 za katerokoli območje. Funkcijo testirajte.
+
+```{r}
+
+
+```
+
+## POIMENOVANJE FUNKCIJ
+
+Kakšno ime ste dali funkciji? Obstajajo pravila, ki se jih je smiselno držati. :-)
+
+Ali je funkcija "lm()" dobro poimenovana? Zakaj?
+
+
+## ARGUMENTI TAKO IN DRUGAČE
+
+Pri funkcijah imamo dva tipa argumentov:
+
+- podatkovni argumenti: podatki, ki jih bo funkcija uporabila
+
+- podrobnosti: povejo, KAKO naj funkcija podatke uporabi.
+
+Argumente funkcije lahko enostavno pogledaš s funkcijo "args()". Poskusimo.
+
+
+### Naloga 10
+
+Funkcijo "mean" vsi poznate. Poglejte pomoč (help) za to funkcijo. 
+
+- Katere argumente ima?
+- Kateri so podatkovni, kateri podrobnosti?
+
+### Naloga 11
+
+Za podatke o plastiki izračunajte povprečje stolpca "Quantity", pri tem pa odrežite (trim) 10% ekstremnih vrednosti. 
+
+```{r}
+
+
+```
+
+Razmislite, kako ste napisali funkcijo.
+- Ste argumente neposredno poimenovali ali kar dali na pričakovane pozicije?
+
+- Katere argumente ste poimenovali? Katere dali na pričakovane pozicije? Ali katerih sploh niste klicali?
+
+Praviloma "nujne" argumente (npr. podatke oz. "x" v funkciji mean) kar damo na pozicijo, kjer jih funkcija pričakuje, medtem ko podrobnosti, ki jih ne potrebujemo nujno (npr. "trim" v funkciji mean) poimenujemo. Je pa to seveda treba smiselno prilagoditi funkciji.
+
+### Naloga 10
+
+Poglej argumente funkcije "lm()". Potem pa še argumente funkcij "filter()" in "ggplot()". Na katerem mestu dobijo funkcije podatke? Ali se lahko "lm()" uporabi v pipe-u?
+
+```{r}
+
+
+```
+
+### Naloga 11
+
+- Predelaj svojo funkcijo iz naloge 9, tako da bo imela smiselno ime in da jo bo mogoče uporabiti v pipe-u!
+
+- Na koncu dodaj stolpec z območjem (vrednost argumenta)
+
+- Testiraj tako, da najprej z dplyr-jem filtriraš samo podatke po letu 2010 in potem s cevovodom %>% s tvojo funkcijo izračunaš količine smeti za območje "United States".
+
+```{r}
+
+
+```
+
+## ARGUMENTI IN PRIVZETE NASTAVITVE
+
+Če se spomnite, R pogosto poskuša čim manj težit - funkcijo lahko uporabljamo z minimalnim naborom argumentov, potem pa dodatno nastavimo tiste, ki jih želimo spremeniti z njihovih privzetih vrednosti.
+
+Za primer lahko pogledamo funkcijo "mean". Privzeto bo obravnavala manjkajoče vrednosti matematično korektno (če so prisotne, bo rezultat "NA") in ji takšnega vedenja ne rabimo posebej nastavljati. Lahko pa funkciji povemo na.rm = TRUE, da manjkajoče vrednosti pred izračunom povprečja nastavi.
+
+Poglejmo kako se to uredi. Ampak najprej gremo spet narediti eno funkcijo. :)
+
+### Naloga 12
+
+Naredite funkcijo, ki bo za posamezno območje narisala rast skupnih smeti skozi čas. Funkcija mora ob podatkih dobiti še dva argumenta:
+
+- barva (barva črte)
+- naslov (naslov grafa)
+
+Princip:
+- Najprej narišite graf, ki bo zgledal tako, kot želite.
+  - uporabljajte %>% 
+  - filtrirajte območje in skupne smeti
+  - narišite linijski graf.
+  - grafu dajte ime "Skupne smeti (ime območja)", kjer bo ime območja to, kar ste izbrali.
+  
+- "Zavijte" v funkcijo. Smiselno izvlečite argumente. Poskusite območje tudi vključiti v naslov! (funkcija "paste()" lepi skupaj besedila)
+
+Funkcijo testirajte. Potem pa jo poskusite zagnati tudi brez da opredelite argumenta "barva" in "naslov". Ali dela?
+
+```{r}
+
+
+```
+
+
+Argumente lahko enostavno nastavimo na privzete vrednosti. Zelo preprosto, v klicu funkcije povemo, kak bo argument, če ga ne opredelimo neposredno.
+
+Primer:
+
+moja_funkcija <- function(data, argument1 = FALSE, argument2 = "yellow"){
+  ....
+  ....
+}
+
+
+### Naloga 13
+
+Funkcijo iz naloge 12 predelaj, tako da nastaviš "naslov" in "barva" na smiselne privzete vrednosti. Testiraj.
+
+```{r}
+
+
+```
+

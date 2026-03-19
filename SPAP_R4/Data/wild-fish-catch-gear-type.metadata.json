@@ -1,0 +1,102 @@
+{
+  "chart": {
+    "title": "Wild fish catch by gear type",
+    "citation": "FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data.",
+    "originalChartUrl": "https://ourworldindata.org/grapher/wild-fish-catch-gear-type?v=1&csvType=full&useColumnShortNames=false",
+    "selection": [
+      "World"
+    ]
+  },
+  "columns": {
+    "bottom_trawl": {
+      "titleShort": "Bottom trawl",
+      "titleLong": "Bottom trawl",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147753,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Bottom trawl” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147753.metadata.json"
+    },
+    "purse_seine": {
+      "titleShort": "Purse seine",
+      "titleLong": "Purse seine",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147758,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Purse seine” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147758.metadata.json"
+    },
+    "pelagic trawl": {
+      "titleShort": "Pelagic trawl",
+      "titleLong": "Pelagic trawl",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147757,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Pelagic trawl” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147757.metadata.json"
+    },
+    "gillnet": {
+      "titleShort": "Gillnet",
+      "titleLong": "Gillnet",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147754,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Gillnet” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147754.metadata.json"
+    },
+    "longline": {
+      "titleShort": "Longline",
+      "titleLong": "Longline",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147755,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Longline” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147755.metadata.json"
+    },
+    "other_gear": {
+      "titleShort": "Other gear",
+      "titleLong": "Other gear",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147756,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Other gear” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147756.metadata.json"
+    },
+    "small_scale": {
+      "titleShort": "Small scale",
+      "titleLong": "Small scale",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147759,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Small scale” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147759.metadata.json"
+    },
+    "unknown_gear": {
+      "titleShort": "Unknown gear",
+      "titleLong": "Unknown gear",
+      "unit": "",
+      "timespan": "",
+      "type": "Numeric",
+      "owidVariableId": 147760,
+      "citationShort": " – processed by Our World in Data",
+      "citationLong": " – processed by Our World in Data. “Unknown gear” [dataset]. FishStat via Pauly, Zeller, and Palomares from Sea Around Us Concepts, Design and Data. [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/147760.metadata.json"
+    }
+  },
+  "dateDownloaded": "2025-03-11",
+  "activeFilters": {}
+}

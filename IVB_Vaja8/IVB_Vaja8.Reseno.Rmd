@@ -1,0 +1,373 @@
+---
+title: "Izbrane vsebine, vaja 8 - Uvod v programiranje III"
+author: "TS"
+date: "2025-04-09"
+output: html_document
+---
+
+Danes nadaljujemo z učenjem programiranja v R-u, zraven pa bomo utrjevali osnovne spretnosti uvažanja podatkov, njihove manipulacije in risanja grafov.
+
+Kot ponavadi... kar v "setup" chunk-u naložite pakete, za katere mislite, da jih bomo potrebovali. Potem bomo po potrebi dopolnili.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(lubridate)
+
+library(ggplot2)
+library(dplyr)
+
+
+```
+
+
+
+## VESOLJCI... nadaljevanje :-)
+
+Prvi podatki za današnje vaje so spet podatki o opažanjih neznanih letečih predmetov (NLP, UFO) v zadnjem stoletju.
+
+
+Datoteka: UFO.csv
+
+vir: kaggle.com
+This dataset was scraped, geolocated, and time standardized from NUFORC data by Sigmond Axel.
+
+
+### UVOZ IN UREJANJE PODATKOV
+Tukaj nadaljujemo s prejšnje vaje. Samo poženemo, da imamo podatke za delo.
+
+```{r}
+UFO = read_csv("UFO.csv")
+UFO = UFO %>% 
+  filter(country == "us") %>% 
+  mutate(city = as.factor(city),
+         state = as.factor(state),
+         country = as.factor(country),
+         shape = as.factor(shape),
+         datetime = mdy_hm(datetime)
+  )
+
+```
+
+
+# ZANKANJE
+
+## 'FOR' ZANKA
+
+Pogosto moramo posamezen korak ponoviti večkrat. Najbolj preprost ukaz za to je "for". Poglejmo primer.
+
+### Primer: 'for' zanka
+
+```{r}
+
+for(i in 1:20){
+  print(i * 4)
+}
+
+```
+
+Poskusite še sami.
+
+### Naloga 1
+
+'for' zanka izpelje operacijo za vsak element vektorja, ki ji ga damo. Spodaj sem pripravil vektor imen 'moja_imena'. Naredite 'for' zanko, ki bo za vsako ime izpisala "Moje ime je" in ime. Funkcija, ki lepi besedila skupaj, je 'paste()'.
+
+```{r}
+# naredimo vektor imen
+moja_imena <- c("Miha", "Anka", "Chuck Norris", "Meta", "Jože",
+                "Genoveva", "Traktorija", "Rambo", "Krümhilde")
+
+# primer uporabe "paste" funkcije
+print(paste("Moje ime je", moja_imena[8]))
+
+# v zankah/funkcijah je dobro eksplicitno uporabiti "print()" 
+# funkcijo za izpis na ekran, ker so drugače včasih težave.
+
+# tu naprej napišite vašo zanko
+
+for(ime in moja_imena){
+  print(paste("Moje ime je", ime))
+}
+
+```
+
+
+### Naloga 2
+Ok, potrebujemo bolj kompleksen primer. Najprej si bomo pripravili funkcijo, ki jo bomo potem dali v zanko.
+
+Naredite funkcijo po imenu 'ufos_by_shape()', ki bo za argument dobila zvezno državo (state), potem pa za to zvezno državo naredila za vsako obliko (shape) UFO-ta graf pojavljanja skozi čas (datetime) -  density plot, barva glede na obliko UFO-ta. Graf spimpaj, da bo zgledal lepo in imel v naslovu tudi ime zvezne države.
+
+Namig: najprej naredi graf za poljubno zvezno državo, ga testiraj, potem ga pa zavij v funkcijo. Funkcijo dokumentirajte z roxygen2.
+
+
+```{r}
+ufos_by_shape = function(data, selected_state){
+  
+  data %>% 
+    filter(state == selected_state) %>% 
+    ggplot(aes(x = datetime, color = shape)) +
+      geom_density() +
+      ggtitle(selected_state) +
+      theme_bw()
+}
+
+ufos_by_shape(UFO, "az")
+
+
+```
+
+
+
+### Naloga 3
+
+Zdaj pa gremo zazankat tole preko vseh zveznih držav in narediti celo goro grafov, za vsako zvezno državo posebej.
+
+V prvi vrstici kode sem pripravil vektor imen zveznih držav.
+
+- V delovnem direktoriju naredi nov direktorij "Grafi".
+- Naredi 'for' zanko, ki bo za vsako zvezno državo s pomočjo funkcije ufos_by_shape() narisala graf in ga pospravila na disk v direktorij "Grafi" pod imenom zvezne države (npr. "Grafi/ca.jpg", "Grafi/az.jpg" itd.)
+
+Namigi:
+- na disk lahko zadnji izrisan graf pospravimo z 'ggsave("ime_datoteke")'.
+- imena datotek boste morali sestaviti iz stringov "Grafi/", imena države iz števca zanke in ".jpg". Funkcija je paste(), morate pa pravilno nastaviti separator (sep = "", brez privzetega presledka), ali pa uporabiti funkcijo paste0(), ki privzeto ne daje presledka med stringe, ki jih lepi.
+
+```{r}
+zvezne_drzave = levels(UFO_US$state)
+#dalje tvoja koda
+
+
+```
+
+
+## 'WHILE' ZANKA
+
+'while' je podoben kot "for", ampak ponavlja naloge dokler je nek pogoj izpolnjen.
+
+### Primer, 'while' zanka
+```{r}
+x <- 1
+
+while (x <= 5) {
+  print(paste("x je", x))
+  x <- x + 1
+}
+
+```
+
+### Naloga 4
+Predelaj primer iz naloge 16 in uporabi 'while' stavek tako, da se imena izpisujejo, dokler ne pride zanka do imena "Rambo".
+
+Malo bolj komplicirano, nekaj nasvetov:
+- Potrebovali boste števec, recimo 'i', s katerim boste morali dobiti iz vektorja imen ime na poziciji 'i' (moja_imena[i]). To boste potrebovali tako za izpis imena na poziciji i kot za preverjanje pogoja v 'while'. 
+- Pred zanko boste morali števec nastaviti na 1 (prvi element vektorja). Temu pravimo 'inicializacija'. 
+- V vsakem koraku boste morali ta števec za ena povečati (i <- i + 1).
+
+```{r}
+i <- 1
+
+while(moja_imena[i] != "Rambo") {
+  print(moja_imena[i])
+  i <- i + 1
+}
+
+```
+
+## ODLOČITVE - 'IF' stavek
+
+Pogosto se mora potek funkcije med izvajanjem prilagoditi. Najbolj pogosto uporabljan stavek je "if".
+
+if (pogoj1) {
+  naredi_nekaj
+} elseif (pogoj2) {
+  naredi_nekaj_drugega
+}
+else {
+  naredi_nekaj_tretjega
+}
+
+### Primer
+Naredili bomo zanko, ki bo preverila ali je ime dolgo ali kratko in naredila različen izpis glede na to. Če bo ime "Chuck Norris", nas bo na to opozorila! Funkcija nchar() nam preveri dolžino string-a (besedila).
+
+```{r}
+for(ime in moja_imena) {
+  if (ime == "Chuck Norris") {
+    print(paste0("Ime je ", ime, "!!!! NAJ TE BO STRAH!"))
+  } else if (nchar(ime) <= 4) {
+    print(paste0("Ime ", ime, " je kratko!"))
+  }
+  else{
+    print(paste0("Ime ", ime, " je dolgo!"))
+  }
+}
+
+```
+
+### Naloga 5
+Malo potrenirajmo funkcije. Zanko iz prejšnjega primera "zavij" v funkcijo, ki bo kot argumente dobila:
+- vektor imen (strin-ov, character)
+- numerični "kriterij" glede na to ali je beseda dolga ali kratka (v primeru je bilo to rešeno v kodi nchar(ime) <= 4)
+- ime, ki se ga bojimo ("Chuck Norris" v primeru).
+
+Funkcijo ustrezno dokumentiraj.
+
+```{r}
+
+
+```
+
+
+Odlično. Zdaj pa še "potrenirajmo" tale if - elseif - else.
+
+### Naloga 5
+Napiši funkcijo "je_deljivo", ki bo za argument dobila številko in deljitelj, potem pa izpisala "Število je deljivo z" [deljitelj], če je število deljivo z deljiteljem in "Število ni deljivo s/z " [deljitelj], če ni deljivo in "Število je" [deljitelj], če je število točno enako deljitelju. Operacija %% vrne celoštevilčni ostanek deljenja (9 %% 3 vrne 0, 9 %% 4 vrne 1 itd.).
+
+```{r}
+# Primer operacije za ostanek, zaženi, da vidiš kako deluje.
+8 %% 3
+9 %% 3
+
+# Tvoja koda od tu dalje
+
+je_deljivo <- function(stevilo, deljitelj) {
+  if (stevilo == deljitelj)
+    print(paste0("Število je ", deljitelj, "!"))
+  else if (stevilo %% deljitelj == 0)
+    print(paste("Število", stevilo, "je deljivo s/z ", deljitelj))
+  else
+    print(paste("Število", stevilo, "ni deljivo s/z ", deljitelj))
+}
+
+je_deljivo(8, 3)
+je_deljivo(9, 3)
+
+```
+### Naloga 6
+
+Poskusimo tole narediti v zanki. Recimo da nas zanima, ali so neke številke deljive s 13. Spodaj imamo vektor števil, uporabi "for" zanko in funkcijo, ki smo jo naredili v nalogi 5, da za vsako med njimi ugotovimo ali je deljiva s 13.
+
+```{r}
+moja_stevila = c(22, 43235, 664823, 22.345E8, 3432, 13, 3328)
+
+#tu dalje tvoja koda
+
+for (stevilo in moja_stevila) {
+  je_deljivo(stevilo, 13)
+}
+
+```
+
+Funkcije lahko uporabljamo tudi vektorizirano. Vektorizacija pomeni, da neko operacijo ali funkcijo zaženemo za vsak element nekega vektorja (lahko tudi vsako vrstico dataframe-a ali podobno). Na ta način se lahko v nekaterih primerih izognemo zankanju, vektorizacija pa je praviloma hitrejša (zato ker je "pod haubo" precej bolj optimizirana koda, napisana v programskem jeziku C).
+
+Funkcije 
+
+### Primer
+
+Ponovimo primer iz začetka:
+```{r}
+for(i in 1:20){
+  print(i * 4)
+}
+```
+Z sapply ('simplified apply' - funkcija za liste ali vektorje) bi lahko tole operacijo "aplicirali" na vsak element vektorja. Nekako tako:
+
+```{r}
+sapply(1:20, function(x) x * 4)
+```
+
+Temu
+
+### Naloga 7
+
+Napiši nalogo 6 z 'sapply()' namesto zanke.
+
+```{r}
+sapply(moja_stevila, function(stevilo) je_deljivo(stevilo, 13))
+```
+
+### Primer
+
+"Odločanje" lahko uporabimo tudi vektorizirano s funkcijo ifelse().
+
+```{r}
+
+# enostaven dataframe, recimo ocene izpita
+rezultati_izpita <- data.frame(
+  ime = c("Metka", "Janko", "Andreja", "Robi", 
+          "Jaka", "Matej", "Nežka"),
+  rezultat = c(85, 92, 76, 58, 90, 45, 52)
+)
+
+#klasificirajmo
+rezultati_izpita = rezultati_izpita %>%
+  mutate(
+    opravil_izpit = ifelse(rezultat > 50, "Opravil", "Padel")
+  )
+
+# Izpišemo
+rezultati_izpita
+
+```
+
+### Naloga 8
+Metka, Andreja in Nežka so ženska imena. Uporabi ifelse in naredi v tabeli rezultati_izpita nov stolpec 'spol', kjer bo za osebe s temi imeni pisalo "Ž", za ostale pa "M".
+
+Namig: uporabi operator %in%! Če ne veš kako deluje, vprašaj chatgpt ali google!
+
+```{r}
+
+
+```
+
+## Vektorirano razvejano odločevanje
+
+Včasih moramo sprejeti več odločitev glede na več pogojev... case_when().
+
+### Primer
+
+```{r}
+
+# preprost df
+meritve_temperature <- data.frame(
+  id = 1:5,
+  temperatura = c(15, 25, 30, 5, 20)
+)
+
+# uporabi case_when da klasificiraš temperaturo
+meritve_temperature = meritve_temperature %>%
+  mutate(
+    kategorija_temperature = case_when(
+      temperatura < 10 ~ "mrzlo",
+      temperatura >= 10 & temperatura < 20 ~ "hladno",
+      temperatura >= 20 & temperatura < 30 ~ "toplo",
+      temperatura >= 30 ~ "vroče"
+      # .default = "kar_nekaj"  #.default se lahko uporabi
+      # kot privzeta vrednost, če noben od pogojev ni izpolnjen.
+    )
+  )
+
+# izpiši
+print(meritve_temperature)
+
+```
+
+
+### Naloga 9
+Uporabi df 'rezultati_izpita' iz prejšnjega primera in case_when ter dodaj stolpec z oceno:
+<=50: padec
+50 < rezultat <= 60: 6
+60 < rezultat <= 70: 7
+70 < rezultat <= 80: 8
+80 < rezultat <= 90: 9
+rezultat > 90: 10
+
+```{r}
+
+
+
+```
+
+
+
+
+
+

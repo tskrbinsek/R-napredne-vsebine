@@ -1,0 +1,430 @@
+---
+title: "Izbrane vsebine, vaja 6 - Uvod v programiranje II"
+author: "TS"
+date: "2025-03-27"
+output: html_document
+---
+
+Danes nadaljujemo z učenjem programiranja v R-u, zraven pa bomo utrjevali osnovne spretnosti uvažanja podatkov, njihove manipulacije in risanja grafov.
+
+Kot ponavadi... kar v "setup" chunk-u naložite pakete, za katere mislite, da jih bomo potrebovali. Potem bomo po potrebi dopolnili.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(lubridate)
+
+```
+
+
+Prejšnjikrat smo začeli z bolj podrobnim pregledom izdelave funkcij. Malo potrenirajmo, da se spomnimo, za kaj gre...
+
+
+### Naloga 1
+
+Napiši funkcijo, ki dobi za argumenta stranici pravokotnika, kot rezultat pa vrne njegov obseg in površino.
+
+```{r}
+
+
+```
+
+Toliko da ste se spomnili, za kaj gre.
+
+Ok, zdaj pa naložimo podatke.  Ob tem bomo imeli tudi priložnost malo povaditi spretnosti iz dplyr-a in ggplot-a.
+
+## VESOLJCI!!!! :-)
+
+Podatki za današnje vaje so o opažanjih neznanih letečih predmetov (NLP, UFO) v zadnjem stoletju.
+
+Wikipedia:
+```{r}
+browseURL("https://en.wikipedia.org/wiki/Unidentified_flying_object")
+```
+
+
+Datoteka: UFO.csv
+
+vir: kaggle.com
+This dataset was scraped, geolocated, and time standardized from NUFORC data by Sigmond Axel.
+
+
+### Naloga 2 - uvoz podatkov
+Podatki so v datoteki UFO.csv. Uvozi podatke v R objekt in preveri, ali so pravilno uvoženi. Uporabite funkcijo read_csv() iz paketa readr.
+
+- S funkcijo "glimpse()" lahko na hitro pogledate podatke, poglejte (odprite) jih pa tudi kot tabelo.
+- Pri uvozu je bilo opozorilo. Za kaj gre?
+
+```{r}
+UFO = read_csv("UFO.csv")
+problems(UFO)
+glimpse(UFO)
+```
+
+### Naloga 3
+Uredite pravkar uvožene podatke (UFO). Spremenite v faktorje kar je potrebno. Uporabite dplyr cevovod ( %>% ) in 'mutate' funkcijo. 
+
+```{r}
+UFO = UFO %>% 
+  mutate(city = as.factor(city),
+         state = as.factor(state),
+         country = as.factor(country),
+         shape = as.factor(shape)
+  )
+
+```
+
+### Naloga 4
+Datum in ura sta poseben izziv, tukaj ju imamo v stolpcu "datetime". Zapis je ameriški (MM/DD/YYY HH:MM). Pretvorite to v ustrezen format (POSIXct), da bo znal R uporabljati.
+
+Tega še nismo delali, tako da se boste morali malo znajti. Predlagam, da uporabite Chat GPT, morate pa razmisliti kako postaviti vprašanje.
+
+```{r}
+UFO = UFO %>% 
+  mutate(datetime = mdy_hm(datetime))
+```
+
+
+## Naloga 5
+Malo treninga spretnosti. Poglej, koliko je bilo primerov UFO-tov po vsaki državi. V kateri državi imamo največ zapisov?
+
+```{r}
+UFO %>% 
+  group_by(country) %>% 
+  summarise(N = n())
+```
+
+### Naloga 6
+Daleč največ zapisov imamo za "US". Pripravite si nov dataframe "UFO_US", kjer bodo samo zapisi za Združene države Amerike.
+
+```{r}
+UFO_US = UFO %>% 
+  filter(country == "us")
+```
+
+## Ameriški UFOti
+
+Opažanja UFO-tov so se gotovo spreminjala skozi čas, verjetno so različna tudi po zveznih državah in mestih... raziščimo. 
+
+### Naloga 7
+Zanima nas, kako se je število beleženja UFO-tov spreminjalo skozi čas. Uporabi ggplot2 in nariši graf števila opažanj skozi čas. Predebatiraj s kolegi okrog sebe kateri graf bi uporabili.
+
+**Dodatek za hitre**: datetime je v formatu POSIXct, kjer sta datum in ura zapisana kot število sekund od 1. januarja 1970 00:00 UTC. Ali znaš narediti histogram tako, da je vsak "bin" širok približno eno leto?
+
+```{r}
+UFO %>% 
+  ggplot(aes(x=datetime)) + geom_histogram(binwidth = 31500000)
+
+# UFO %>% 
+#   ggplot(aes(x=datetime, color = shape)) + geom_density()
+```
+
+Ok, število opažanj difinitivno raste. Ali vidite kakšne vzorce? Morda kakšne špekulacije kaj bi bili razlogi? :-) 
+
+```{r}
+browseURL("https://en.wikipedia.org/wiki/Roswell_incident")
+```
+
+
+### Naloga 8
+
+Ali so leteči krožniki res krožniki? Nariši stolpični diagram števila opaženih UFOtov po obliki.
+
+Namig: 
+- Preden lahko to narišeš, moraš izračunati število UFO-tov vsake oblike (group_by, summarise), nakar lahko vse po cevovodu pelješ neposredno v ggplot.
+
+- Če so dolga imena kategorij, je pogosto lepši graf, če so stolpci vodoravno.
+
+**Dodatek za hitre**: uredi graf tako, da bodo stolpci urejeni od največjega do najmanjšega. Funkcija 'reorder' sortira levele faktorjev. Namig: sortiraš lahko tudi neposredno v 'aes()', ni potrebno delati novih stolpcev. 
+
+```{r}
+
+UFO_US %>%
+  group_by(shape) %>% 
+  summarise(N = n()) %>% 
+  ggplot(aes(y=reorder(shape, N), x=N)) + geom_col()
+
+```
+
+Hm... mogoče pa je različno po zveznih državah?
+
+### Naloga 9
+
+Najdi prvih 10 zveznih držav, v katerih so opazili največ UFO-tov.
+
+```{r}
+UFO_US %>% 
+  group_by(state) %>% 
+  summarise(N = n()) %>% 
+  arrange(desc(N)) %>% 
+  head(10)
+```
+
+Kaj pa v vsaki posamezni zvezni državi, kako so se števila opaženih UFO-tov spreminjala? Kaj pa njihove oblike?
+
+### Naloga 10
+Nariši graf števila opaženih UFO-tov skozi čas za Kalifornijo. 
+- Določi, da bodo podatki prikazani z redečo barvo (fill ali color, odvisno od geoma). 
+- Graf "spimpaj", da bo v naslovu pisalo "Zvezna država ca", da bo imel smiselna imena x in y osi in belo ozadje.
+
+```{r}
+UFO_US %>% 
+  filter(state == "ca") %>% 
+  ggplot(aes(x=datetime)) +
+    geom_histogram(fill = "red", color = "black")+
+  ggtitle("Zvezna država ca") +
+  xlab("leto") + ylab("delež opažanj") +
+  theme_bw()
+```
+
+
+
+### Naloga 11
+
+Iz skripte v nalogi 10 naredite funkcijo, ki bo kot argumente dobila podatke, ime zvezne države in barvo grafa (fill), potem pa za njo narisala graf. Funkcijo testirajte na Arizoni ("az").
+
+Opombe: 
+- spomnite se pravil za poimenovanje funkcij, da boste dali funkciji smiselno ime.
+- funkcijo sprogramirajte tako, da bo delala tudi v pipe-u ( %>% )
+
+
+Sa se spomnimo s prejšnjih vaj, mamo nekaj korakov:
+1. Narediti "ogrodje" funkcije.
+2. Zalepite vanj vašo skripto.
+3. Izberite argumente, ki jih boste dali funkciji in jih dajte v klic `function()`.
+4. Naredite imena argumentov čim bolj splošna.
+5. Zamenjajte specifične vrednosti z imeni argumentov.
+
+```{r}
+
+
+```
+
+### Naloga 12
+Poskusi funkcijo iz naloge 11 zagnati tako, da funkciji ne definiraš barve grafa. Kaj se zgodi?
+
+```{r}
+
+```
+
+
+Argumente lahko enostavno nastavimo na privzete vrednosti. Zelo preprosto, v klicu funkcije povemo, kak bo argument, če ga ne opredelimo neposredno.
+
+Primer:
+
+moja_funkcija <- function(data, argument1 = FALSE, argument2 = "yellow"){
+  ....
+  ....
+}
+
+
+### Naloga 13
+
+Funkcijo popravi tako, da bo imela barva grafa privzeto vrednost "red" (lahko kar v chunk-u od naloge 11). Testiraj.
+
+```{r}
+
+```
+
+
+## ORGANIZACIJA FUNKCIJ
+
+Funkcije sicer lahko pustite v Rmarkdown skripti, bolj praktično pa je, če jih spravite v posebno ".R" datoteko, jih dokumentirate, potem pa to datoteko preprosto pokličete, ko funkcije potrebujete. Gremo po vrsti.
+
+### Naloga 14
+
+- Naredi novo .R datoteko (File / New file / R Script)in jo posnami v delovni direktorij. Datoteki daj ime "ufo_funkcije.R".
+
+- V datoteko prilepi funkcijo za risanje UFOtov po državi, ki si jo pravkar naredil/a. Funkcijo malo preimenuj, da jo bomo prepoznali. Posnami datoteko.
+
+- Pokliči ufo_funkcije.R s funkcijo "source()". Kaj se zgodi?
+```{r}
+
+```
+
+
+## DOKUMENTACIJA FUNKCIJ
+
+Funkcije je potrebno DOKUMENTIRATI - samo tako jih bomo čez nekaj časa spet znali uporabljati, pa tudi če jih bomo komu poslali, bo (morda) razumel, za kaj gre. Če pa se bo vaših "doma pečenih" funkcij kdaj nabralo dovolj, pa boste morda vse skupaj zapakirali in objavili čisto vaš R paket, da ga bo lahko svet uporabljal... :-)
+
+V R-u vse funkcije, ki so v Base R-u ali v objavljenih paketih, MORAJO biti dokumentirane.
+
+Poglejmo dokumentacijo za funkcijo "mean". Katere elemente vidiš?
+```{r}
+?mean
+```
+
+Funkcije lahko dokumentiraš čisto po domače - s komentarji # zapišeš pred njimi kaj delajo in kaj so parametri. Lahko pa uporabimo "profi" orodja in to naredimo tako kot treba, zelo enostavno.
+
+### Naloga 15
+V skripti "ufo_funkcije.R" se postavi na prvo vrstico prve funkcije in klikni v menijih "Code / Insert Roxygen Skeleton". Že imaš "skelet" dokumentacije!
+
+Roxygen omogoča avtomatsko izdelavo "Help" datotek (kot jih dobite pri objavljenih funkcijah), če boste iz vaših funkcij želeli kdaj narediti paket. Tudi če tega ne nameravate, vas lepo vodi skozi proces dokumentiranja.
+
+- V prvo vrstico zapišite kratek naslov funkcije
+- Ena vrstica prazna
+- Napišite opis kako funkcija dela
+- Opišite parametre (@param)
+- Opišite kaj funkcija vrne (@returns)
+- Razmislite, če želite opisati/dodati še kaj drugega.
+
+
+Toliko za danes o funkcijah. Jih bomo pa od zdaj dalje kar uporabljali! :-)
+
+
+# ZANKANJE
+
+## 'FOR' ZANKA
+
+Pogosto moramo posamezen korak ponoviti večkrat. Najbolj preprost ukaz za to je "for". Poglejmo primer.
+
+### Primer: 'for' zanka
+
+```{r}
+
+for(i in 1:20){
+  print(i * 4)
+}
+
+```
+
+Poskusite še sami.
+
+### Naloga 16
+
+'for' zanka izpelje operacijo za vsak element vektorja, ki ji ga damo. Spodaj bomo naredili vektor imen 'moja_imena'. Naredite 'for' zanko, ki bo za vsako ime izpisala "Moje ime je" in ime. Funkcija, ki lepi besedila skupaj, je 'paste()'.
+
+```{r}
+# naredimo vektor imen
+moja_imena <- c("Miha", "Anka", "Chuck Norris", "Meta", "Jože",
+                "Genoveva", "Traktorija", "Rambo", "Krümhilde")
+
+# primer uporabe "paste" funkcije
+print(paste("Moje ime je", moja_imena[8]))
+# v zankah/funkcijah je dobro eksplicitno uporabiti "print()" 
+# funkcijo za izpis na ekran, ker so drugače včasih težave.
+
+# tu naprej napišite vašo zanko
+
+for(ime in moja_imena){
+  print(paste("Moje ime je", ime))
+}
+
+```
+
+Ok, zdaj pa še malo bolj praktičen primer.
+
+### Naloga 17
+
+V prvi vrstici kode sem pripravil vektor imen zveznih držav.
+
+- V delovnem direktoriju naredi nov direktorij "Grafi".
+- Naredi 'for' zanko, ki bo za vsako zvezno državo narisala graf in ga pospravila na disk v direktorij "Grafi" pod imenom zvezne države (npr. "Grafi/ca.jpg", "Grafi/az.jpg" itd.)
+
+Namigi:
+- na disk lahko zadnji izrisan graf pospravimo z 'ggsave("ime_datoteke")'.
+- imena datotek boste morali sestaviti iz stringov "Grafi/", imena države iz števca zanke in ".jpg". Funkcija je paste(), morate pa pravilno nastaviti separator (sep = ""), ali pa uporabiti funkcijo paste0(), ki privzeto ne daje presledka med stringe, ki jih lepi.
+
+```{r}
+zvezne_drzave = levels(UFO_US$state)
+#dalje tvoja koda
+
+
+```
+
+
+## 'WHILE' ZANKA
+
+'while' je podoben kot "for", ampak ponavlja naloge dokler je nek pogoj izpolnjen.
+
+### Primer, 'while' zanka
+```{r}
+x <- 1
+
+while (x <= 5) {
+  print(paste("x je", x))
+  x <- x + 1
+}
+
+```
+
+### Naloga 18
+Predelaj primer iz naloge 16 in uporabi 'while' stavek tako, da se imena izpisujejo, dokler ne pride zanka do imena "Rambo".
+
+Malo bolj komplicirano, nekaj nasvetov:
+- Potrebovali boste števec, recimo 'i', s katerim boste morali dobiti iz vektorja imen ime na poziciji 'i' (moja_imena[i]). To boste potrebovali tako za izpis imena na poziciji i kot za preverjanje pogoja v 'while'. 
+- Pred zanko boste morali števec nastaviti na 1 (prvi element vektorja). Temu pravimo 'inicializacija'. 
+- V vsakem koraku boste morali ta števec za ena povečati (i <- i + 1).
+
+```{r}
+i <- 1
+
+while(moja_imena[i] != "Rambo") {
+  print(moja_imena[i])
+  i <- i + 1
+}
+
+```
+
+## ODLOČITVE - 'IF' stavek
+
+Pogosto se mora potek funkcije med izvajanjem prilagoditi. Najbolj pogosto uporabljan stavek je "if".
+
+if (pogoj1) {
+  naredi_nekaj
+} elseif (pogoj2) {
+  naredi_nekaj_drugega
+}
+else {
+  naredi_nekaj_tretjega
+}
+
+### Primer
+Naredili bomo funkcijo, ki bo preverila ali je ime dolgo ali kratko in naredila različen izpis. Če bo ime "Chuck Norris", nas bo na to opozorila! Funkcija nchar() nam preveri dolžino string-a (besedila).
+
+```{r}
+for(ime in moja_imena) {
+  if (ime == "Chuck Norris") {
+    print(paste0("Ime je ", ime, "!!!! NAJ TE BO STRAH!"))
+  } else if (nchar(ime) <= 4) {
+    print(paste0("Ime ", ime, " je kratko!"))
+  }
+  else{
+    print(paste0("Ime ", ime, " je dolgo!"))
+  }
+}
+
+```
+
+Poskusite sami.
+
+### Naloga 19
+Napiši funkcijo "deljivo3", ki bo za argument dobila številko, potem pa izpisala "Število je deljivo s 3", če je število deljivo s 3, "Število ni deljivo s 3", če ni deljivo in "Število je 3", če je število točno 3. Operacija %% vrne celoštevilčni ostanek deljenja (9 %% 3 vrne 0, 9 %% 4 vrne 1 itd.).
+
+```{r}
+# Primer operacije za ostanek, zaženi, da vidiš kako deluje.
+8 %% 3
+9 %% 3
+
+# Tvoja koda od tu dalje
+
+deljivo3 <- function(stevilo) {
+  if (stevilo == 3)
+    print("Število je 3!")
+  else if (stevilo %% 3 == 0)
+    print(paste("Število", stevilo, "je deljivo s 3."))
+  else
+    print(paste("Število", stevilo, "ni deljivo s 3."))
+}
+
+deljivo3(8)
+deljivo3(9)
+
+```
+
+
+Toliko o osnovah. Naslednjič bolj praktično. :-)

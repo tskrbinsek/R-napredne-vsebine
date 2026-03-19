@@ -1,0 +1,336 @@
+---
+title: 'SPAP R3.2 - "Masiranje" podatkov v R-u'
+author: "Tomaž Skrbinšek"
+date: "4. marec 2025"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Tudi ko imamo čiste in lepe podatke (kako priti do tega bomo preskočili...), je naš prvi korak, da jih pogledamo, poskušamo razumeti strukturo, obliko... Naslednji korak je, da začnemo iskati vzorce v podatkih - kar pa je že naš prvi korak na poti od podatkov do znanja.
+
+Pa začnimo s podatki. Tokrat je koda napisana, jo bomo pa malo pogledali. 
+
+```{r}
+podatki <- read.table("pn2023.csv", sep = ";", header = T, 
+                      fileEncoding = "Windows-1250", dec = ",", stringsAsFactors = T)
+```
+
+
+### Naloga 1
+
+Najprej poglejte strukturo nastalega objekta in poglejte podatke kot tabelo, da vidite, če je vse pravilno uvoženo. Funkcije za to že poznate.
+
+<!-- TUKAJ NAREDI CHUNK ZA SVOJO KODO --> 
+```{r}
+str(podatki)
+```
+
+## METAPODATKI
+Metapodatki so "podatki o podatkih". Če sami pripravimo/pridobimo podatke, jih moramo prav tako opisati.
+
+### Podatki prometne varnosti (vir: Policija, dostop 4. 3. 2025)
+
+Za področje prometne varnosti je na voljo ena datoteka na leto za pretekla leta. Združuje prometne nesreče in osebe, ki nastopajo v prometnih nesrečah kot povzročitelji ali oškodovanci udeleženci.
+Podatki se v CSV datoteko izvozijo enkrat letno in sicer drugi vikend v februarju za preteklo leto. V datoteki so zajete vse prometne nesreče, pri ogledu katerih je sodelovala policija, zgodile pa so se v obravnavanem obdobju.
+Podatki so dešifrirani, zato vsebina šifrantov ni potrebna.
+
+Pod Mesečna poročila se podatki v CSV datoteko izvozijo enkrat mesečno in sicer 10. v mesecu za pretekle polne mesece tekočega leta.
+
+### Opombe:
+
+V stolpcih "Vrednost strokovnega pregleda, če je bil opravljen" in "Vrednost alkotesta, če je bil opravljen" je lahko vpisana vrednost 0.00 četudi pregled ni bil opravljen.
+PN - okrajšava za "prometna nesreča"
+Kjer geo koordinate niso znane ali dostopne je v podatkih vpisana "0"
+
+### Struktura baze za prometne nesreče (PN):
+
+številka za štetje in ločevanje posamezne prometne nesreče
+klasifikacija nesreče glede na posledice (Izračuna se avtomatično glede na najhujšo posledico pri udeležencih v prometni nesreči)
+upravna enota, na območju katere se je zgodila prometna nesreča
+datum nesreče (format: dd.mm.llll) 
+ura nesreče (format: hh.mm) 
+indikator ali se je nesreča zgodila v naselju (D) ali izven (N)
+lokacija nesreče
+vrsta ceste ali naselja na kateri je prišlo do nesreče
+oznaka ceste ali šifra naselja kjer je prišlo do nesreče
+tekst ceste ali naselja, kjer je prišlo do nesreče
+oznaka odseka ceste ali šifra ulice, kjer je prišlo do nesreče
+tekst odseka ali ulice, kjer je prišlo do nesreče
+točna stacionaža ali hišna številka, kjer je prišlo do nesreče
+opis prizorišča nesreče
+glavni vzrok nesreče
+tip nesreče
+vremenske okoliščine v času nesreče
+stanje prometa v času nesreče
+stanje vozišča v času nesreče
+stanje površine vozišča v času nesreče
+Geo Koordinata X je z letom 2013 v D96/TM koordinatnem sistemu, pred tem v Gauß-Krüger-jev koordinatnem sistemu
+Geo Koordinata Y je z letom 2013 v D96/TM koordinatnem sistemu, pred tem v Gauß-Krüger-jev koordinatnem sistemu
+številka za štetje in ločevanje oseb, udeleženih v prometnih nesrečah
+kot kaj nastopa oseba v prometni nesreči
+starost osebe (LL)
+spol
+upravna enota stalnega prebivališča
+državljanstvo osebe
+poškodba osebe
+vrsta udeleženca v prometu
+ali je oseba uporabljala varnostni pas ali čelado (polje se interpretira v odvisnosti od vrste udeleženca) (Da/Ne)
+vozniški staž osebe za kategorijo, ki jo potrebuje glede na vrsto udeleženca v prometu (LL)
+vozniški staž osebe za kategorijo, ki jo potrebuje glede na vrsto udeleženca v prometu (MM)
+vrednost alkotesta za osebo, če je bil opravljen (n.nn v enoti mg alkohola/liter izdihanega zraka (mg/l))
+vrednost strokovnega pregleda za osebo, če je bil odrejen in so rezultati že znani (n.nn v enoti g alkohola/kg krvi (g/kg))
+
+
+### Naloga 2
+Naredite povzetek podatkov, da dobimo približen občutek o njih.
+```{r}
+summary(podatki)
+```
+
+### Naloga 3
+Izpišite imena stolpcev, da bomo razmišljali o posameznih spremenljivkah in analizi...
+```{r}
+names(podatki)
+```
+
+
+Gremo počasi raziskovati podatke. Spremenljivko po spremenljivko... strukturo, obliko itd.
+
+Čeprav bi lahko to vse počeli v "osnovnem" R-u, kot ste ga spoznavali do zdaj, obstajajo bližnjice. Predstavljamo paket: 'dplyr'(fanfare v ozadju). "Data pliers". Klešče za podatke. :) Izpod tastature istega Hadlya Wickhama, ki nam je naredil že ggplot2. Oboje je del "Tidyverse"-a, izjemno uporabne nadgradnje R-a.
+
+dplyr, kot že ime pove :), omogoča enostavno "masažo" podatkov v oblike, ki jih rabimo.
+
+### Naloga 4
+Naloži paket dplyr. Ko si ravno v akciji, naloži še paket ggplot2.
+```{r}
+#install.packages("dplyr") #tole je za doma... :)
+library(dplyr)
+library(ggplot2)
+```
+
+### dplyr in "glagoli"
+dplyr ima nekoliko svojevrstno logiko... funkcije lahko razumemo kot "glagole" - besede, ki nekaj naredijo. Magija, ki sledi (o tem malo kasneje), nam omogoča, da te glagole sestavimo v "stavke", ki nam naredijo kompleksna opravila. 
+
+Nekaj ključnih "glagolov" (funkcij), ki si jih je dobro zapomniti. Tukaj jih bom zapisal kot referenco (plonk):
+
+select() - izbere stolpce
+filter() - filtrira vrstice
+arrange() - sortira vrstice
+mutate() - naredi nove stolpce
+summarise() - naredi povzetke vrednosti
+group_by() - grupira podatke
+
+Ampak najprej moramo razširiti besednjak. Gremo po vrsti.
+
+## Izbiranje stolpcev s 'select'
+
+Uporabimo 'select', da izberemo stolpce. Ker je vseh podatkov ogromno, si gremo kar pripraviti eno manjšo tabelo za našo specifično analizo. Naredimo objekt 'podatki_analiza', v katerem bodo stolpci ZaporednaStevilkaPN, KasifikacijaNesrece, UpravnaEnotaStoritve in Povzrocitelj.
+
+### Primer
+```{r}
+podatki_analiza = select(podatki, ZaporednaStevilkaPN, KlasifikacijaNesrece, UpravnaEnotaStoritve, Povzrocitelj)
+```
+
+Preprosto, ne? Malo drugačna logika kot do zdaj, ampak precej prijazno. Lahko pa gremo še bolj preprosto... z ':' lahko izberemo vse stolpce od:do (glede na razporeditev v "names"). Poskusite... 
+
+### Naloga 5
+Naredi primer od zgoraj, ampak uporabi ':' da boš izbral vse stolpce od ZaporednaStevilkaPN do VNaselju BREZ stolpca UraPN, vse stolpce od OpisKraja do VrstaVozisca, stolpce od Povzrocitelj do Spol, stolpce od PoskodbaUdelezenca  do VrednostAlkotesta. Copy/Paste. :-)
+```{r}
+podatki_analiza = select(podatki, ZaporednaStevilkaPN:VNaselju, -UraPN, OpisKraja: VrstaVozisca, Povzrocitelj:Spol, PoskodbaUdelezenca:VrednostAlkotesta)
+```
+
+Dalje postane še bolj pestro, ker lahko izberemo stolpce, ki se začnejo z nekim besedilom 'starts_with()', imajo besedilo (contains())... bodi dovolj, za več je help.
+
+Zdaj znamo izbirati stolpce, kaj pa z izbiranjem vrstic? Nič lažjega, ukaz 'filter()'.
+
+## 'filter' za izbiranje vrstic
+
+### Primer
+Gremo na primer iz objekta podatki izbrati samo povzročitelje prometnih nesreč ki so imeli več kot 0.0 alkohola
+```{r}
+povzrocitelji_alkohol = filter(podatki_analiza, 
+                               Povzrocitelj == "POVZROČITELJ",
+                               VrednostAlkotesta > 0)
+```
+
+Vidite logiko? Najprej podatki, potem kaj hočemo z njimi, vse z vejicami. Lahko uporabimo nam že znane logične operacije, kadar pa je logični "AND", pa lahko pogoje preprosto nizamo z vejicami.
+
+### Naloga 6
+Za primer naredite nov objekt 'povzročitelji_hitrost', v katerem bodo povzročitelji prometne nesreče, pri katerih je bil vzrok prehitra vožnja.
+
+Namig: najprej naredi "levels()" za stolpec "VzrokNesrece", da točno vidiš katere kategorije so v njem.
+```{r}
+levels(podatki_analiza$VzrokNesrece)
+
+povzrocitelji_hitrost <- filter(podatki_analiza, 
+                                Povzrocitelj == "POVZROČITELJ",
+                                VzrokNesrece == "NEPRILAGOJENA HITROST")
+```
+
+Zdaj pa prihajamo do bistva. Moč dplyr je v sestavljanju ukazov. To naredimo s "pipe" operatorjem, ki se zapiše takole: %>%
+
+Dobimo ga enostavno s `<ctrl-shift-M>`.
+
+Pomeni: tisto z leve pošlji (%>%) na desno. Zdaj lahko začnemo ukaze pisati in brati v smeri, kot smo navajeni v "normalnem" življenju, od leve proti desni.
+
+Na primer, iz podatkov "filtriramo" samo povzročitelje prometnih nesreč v upravni enoti Ljubljana, izberemo stolpca VozniskiStazVLetih in UporabaVarnostnegaPasu in naredimo povzetek.
+
+### Primer
+```{r}
+podatki_analiza %>% 
+  filter(UpravnaEnotaStoritve == "LJUBLJANA", 
+         Povzrocitelj == "POVZROČITELJ") %>%
+  select(VozniskiStazVLetih, UporabaVarnostnegaPasu) %>% 
+  summary()
+```
+
+Pa poskusite. 
+
+### Naloga 7
+Izberite POVZROČITELJE vseh prometnih nesreč, ki so se zgodile v Mariboru, izberi VzrokNesrece in VremenskeOkoliscine in naredi kontingenčno tabelo (funkcija 'table()). Ne pozabi na Copy/Paste.
+```{r}
+podatki_analiza %>% 
+  filter(UpravnaEnotaStoritve == "MARIBOR", 
+         Povzrocitelj == "POVZROČITELJ") %>%
+  select(VzrokNesrece, VremenskeOkoliscine) %>% 
+  table()
+```
+
+## 'summarise' za vertikalne povzetke
+Zelo enostavne povzetke tabel lahko naredimo s funkcijo 'summarise()'... ni enako kot 'summary', ki ga že poznate! 
+
+Z njo enostavno izračunamo "vertikalne" povzetke stolpcev:  sd(), min(), max(), median(), sum(), n() (vrne DOLŽINO vektorja), first() (vrne prvo vrednost v vektorju), last() (vrne zadnjo vrednost v vektorju) and n_distinct() (število različnih vrednosti v vektorju).
+
+### Primer
+Gremo za primer od prej pogledati minimalno, maksimalno in povprečno starost povzročitelja PN:
+```{r}
+podatki_analiza %>% 
+  filter(UpravnaEnotaStoritve == "MARIBOR", 
+         Povzrocitelj == "POVZROČITELJ") %>%
+  summarise(min_starost = min(Starost),
+            povp_starost = mean(Starost),
+            maks_starost = max(Starost),
+            N = n())
+```
+
+Tisti n() je povedal koliko je bilo zapisov!
+Poskusite sami. 
+
+### Naloga 8
+Izračunajte povprečno vrednost alkotesta za povzročitelje nesreč iz maribora, kjer je bil vzrok nesreče neprilagojena hitrost.
+
+```{r}
+podatki_analiza %>% 
+  filter(UpravnaEnotaStoritve == "MARIBOR", 
+         Povzrocitelj == "POVZROČITELJ",
+         VzrokNesrece == "NEPRILAGOJENA HITROST") %>%
+  summarise(povpr_alko = mean(VrednostAlkotesta),
+            N = n())
+
+```
+Ha, Štajerci!!! Zdaj pa na hitro spremenite kodo in to isto poglejte za Ljubljano. :-)
+
+
+## 'mutate' za nove stolpce
+
+Včasih moramo narediti v tabeli nove stolpce, bodisi s preračunanjem starih ali neposredno. Funkcija 'mutate()'.
+
+### Primer
+Tako lahko na primer dodamo nov stolpec "Num", v katerem bo zaporedna številka osebe:
+```{r}
+podatki_analiza = podatki_analiza %>% 
+  mutate(NumOsebe = 1:n()) #generira nov stolpec Num z zaporednimi številkami od 1 do števila vrstic (kar vrne funkcija n())
+```
+
+Poskusite sami.
+
+### Naloga 9
+Vozniški staž je zdaj v dveh stolpcih, leta in meseci. V tabeli 'podatki_analiza' s funkcijo 'mutate()' naredite nov stolpec 'vozniski_staz', v katerem bo celoten vozniški staž v letih (kot decimalno število).
+```{r}
+podatki_analiza = podatki_analiza %>% 
+  mutate(vozniski_staz = (VozniskiStazVLetih * 12 + VozniskiStazVMesecih)/12)
+```
+
+
+## 'group_by' za grupiranje podatkov po kategorični spremenljivki
+
+Zelo enostavno lahko podatke grupiramo po vrednostih v nekem stolpcu in potem računamo sumarične statistike s 'summarise'... group_by.
+
+### Primer
+Poglejmo povprečno vrednost alkohola v krvi pri nesrečah, kjer je bil vzrok hitrost, po upravnih enotah.
+```{r}
+podatki_analiza %>% 
+  filter(Povzrocitelj == "POVZROČITELJ",
+         VzrokNesrece == "NEPRILAGOJENA HITROST") %>%
+  group_by(UpravnaEnotaStoritve) %>% 
+  summarise(povpr_alko = mean(VrednostAlkotesta),
+            N = n())
+```
+
+Zdaj pa sami
+
+### Naloga 10
+Poglejte povprečno vrednost alkotesta POVZROČITELJEV nesreč s smrtnim izidom (TipNesrece), glede na vzrok nesreče, poglej tudi koliko jih je v vsaki kategoriji vzroka nesreče (funkcija 'n()'). Uporabi 'levels()' da ugotoviš kategorije v 'KlasifikacijaNesrece'.
+```{r}
+levels(podatki_analiza$KlasifikacijaNesrece)
+
+podatki_analiza %>%
+  filter(KlasifikacijaNesrece == "S SMRTNIM IZIDOM",
+         Povzrocitelj == "POVZROČITELJ") %>% 
+  group_by(VzrokNesrece) %>% 
+  summarise(povp_alko = mean(VrednostAlkotesta), N = n())
+```
+
+
+# arrange - sortiranje
+S funkcijo 'arrange' podatke zelo enostavno sortiramo po enem ali več stolpcih. Preprosto v naš cevovod dodamo arrange(stolpec1, stolpec2) in bo izhod sortiral po stolpcih od najmanjšega proti največjemu. 
+
+Če želimo obrniti vrstni red sortiranja (največji proti najmanjšemu) uporabimo funkcijo 'desc': arrange(stolpec1, desc(stolpec2)) - to bo sortiralo najprej po stolpcu1 od najmanjšega proti največjemu in potem po stolpcu dva od največjega proti najmanjšemu.
+
+## Naloga 11
+Kopiraj kodo iz prejšnje naloge, potem pa dodaj novo vrstico (s %>% ), ki bo sortira podatke po številu umrlih od največjega proti najmanjšemu.
+```{r}
+podatki_analiza %>%
+  filter(KlasifikacijaNesrece == "S SMRTNIM IZIDOM",
+         Povzrocitelj == "POVZROČITELJ") %>% 
+  group_by(VzrokNesrece) %>% 
+  summarise(povp_alko = mean(VrednostAlkotesta), N = n()) %>% 
+  arrange(desc(povp_alko))
+```
+
+### Primer
+Cevovod lahko zelo enostavno povežemo tudi v graf. Tako lahko na primer iz kodo iz prejšnjega chunka kar preprosto speljemo v graf:
+```{r}
+podatki_analiza %>%
+  filter(KlasifikacijaNesrece == "S SMRTNIM IZIDOM",
+         Povzrocitelj == "POVZROČITELJ") %>% 
+  group_by(VzrokNesrece) %>% 
+  summarise(povp_alko = mean(VrednostAlkotesta), N = n()) %>% 
+  arrange(desc(povp_alko)) %>% #arrange ni potreben, ampak ne moti
+  ggplot(aes(y = VzrokNesrece, x = N, fill = povp_alko)) +
+    geom_col(color = "black") + #da je okvir stolpcev črn
+    scale_fill_gradient(low="white", high="red") #gradientna skala od bele proti rdeči
+  
+```
+### Naloga 12
+Vzami kodo iz prejšnjega chunka in jo spremeni tako, da bo graf kazal nesreče "S HUDO TELESNO POŠKODBO".
+```{r}
+podatki_analiza %>%
+  filter(KlasifikacijaNesrece == "S HUDO TELESNO POŠKODBO",
+         Povzrocitelj == "POVZROČITELJ") %>% 
+  group_by(VzrokNesrece) %>% 
+  summarise(povp_alko = mean(VrednostAlkotesta), N = n()) %>% 
+  arrange(desc(povp_alko)) %>% #arrange ni potreben, ampak ne moti
+  ggplot(aes(y = VzrokNesrece, x = N, fill = povp_alko)) +
+    geom_col(color = "black") +
+    scale_fill_gradient(low="white", high="red") #gradientna skala od bele proti rdeči
+```
+
+
+
+
+
+

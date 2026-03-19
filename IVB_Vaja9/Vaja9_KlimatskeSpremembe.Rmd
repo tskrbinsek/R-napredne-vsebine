@@ -1,0 +1,312 @@
+---
+title: "Izbrane vsebine 2024 - 2025, vaja 9"
+output: html_notebook
+---
+
+## Pripravimo R okolje za delo (ker je to `setup` chunk, se bo zagnal sam).
+
+### Naloga 0: NALOŽI KNJIŽNICE!!
+
+```{r setup}
+
+#tu dodamo še ostale knjižnice, ki jih bomo potrebovali... ko ugotovimo, da jih potrebujemo
+
+#globalno bomo nastavili temo za ggplot2 na črno/belo
+theme_set(theme_bw())
+
+```
+
+# VAJA 9: KLIMATSKE SPREMEMBE IN RAST PREBIVALSTVA
+
+## Naloga in način dela
+
+Danes se bomo igrali s podatki o klimatskih spremembah. 
+
+**Iz Wikipedije, proste enciklopedije**
+
+Spremémbe podnébja, pogosto tudi klimátske spremémbe, so pojav spreminjanja podnebja na celi Zemlji (globalne spremembe) ali na posameznih območjih.
+
+V zadnjih desetletjih opazujemo spremembe, ki so posledica človeških dejavnosti, zlasti zgorevanja fosilnih goriv, zaradi česar se povečuje koncentracija ogljikovega dioksida v ozračju. Ta plin povzroča učinek tople grede. Možno je, da bo nadaljnje zgorevanja premoga in ogljikovodikov povzročilo znatno povečanje temperature in druge, po pričakovanju večinoma neugodne učinke. Dolgoletno prizadevanje ekologov in okoljskih aktivistov je privedla do prvih mednarodnih ukrepov za zmanjšanje antropogenih sprememb podnebja, vključno s Kjotskim protokolom.
+
+
+## Splošne naloge:
+
+- Razišči dvig globalnih temperatur v merjenih podatkih
+- Poglej rast populacije človeštva in izpuste toplogrednih plinov
+- Najdi kdo in kaj najbolj prispeva k izpustu toplogrednih plinov
+
+## Princip dela
+
+- Skupaj pogledamo nalogo in podatke, ki jih imamo na voljo.
+- Dogovorimo se za naslednji korak v analizi in razčlenimo **postopek**, kaj je potrebno narediti. Postopek si napišite - to vas bo vodilo.
+- V skupinah rešite korak.
+- Pogledamo rešitve, gremo na naslednji korak.
+
+Kar veselo! :)
+
+
+_________________________________
+_________________________________
+
+# 1: Razišči podatke meritev temperatur za naš planet
+
+Temperature našega planeta neposredno merimo zadnjih dobrih 250 let. Kvaliteta meritev je (jasno) vse višja, zadnjih 100 let postajajo zadeve že kar natančne.
+
+Raziščimo, ali v tej časovni skali opažamo kakšne spremembe v povprečni temperaturi zemlje. 
+
+_________________________________
+### Podatki 1: Globalne temperature
+
+Podatke najdete v datoteki `GlobalTemperatures.csv`. 
+- Preberi podatke v objekt`GlobalTemperatures`. 
+- Ko prebereš, pretvori stopec `dt` v tip podatka `Date`.
+
+```{r}
+GlobalTemperatures = #...
+```
+
+
+**O podatkih**
+
+Global Land and Ocean-and-Land Temperatures (GlobalTemperatures.csv):
+
+Date: starts in 1750 for average land temperature and 1850 for max and min land temperatures and global ocean and land temperatures
+LandAverageTemperature: global average land temperature in celsius
+LandAverageTemperatureUncertainty: the 95% confidence interval around the average
+LandMaxTemperature: global average maximum land temperature in celsius
+LandMaxTemperatureUncertainty: the 95% confidence interval around the maximum land temperature
+LandMinTemperature: global average minimum land temperature in celsius
+LandMinTemperatureUncertainty: the 95% confidence interval around the minimum land temperature
+LandAndOceanAverageTemperature: global average land and ocean temperature in celsius
+LandAndOceanAverageTemperatureUncertainty: the 95% confidence interval around the global average land and ocean temperature
+
+_________________________________
+### Naloga 1.1
+
+Nariši graf gibanja povprečne temperature kopna skozi čas.
+
+Postopek (dogovor):
+
+```{r}
+
+
+```
+
+
+Kako zgleda? Zakaj tako "opleta"?
+
+
+
+
+_________________________________
+### Naloga 1.2
+
+Izračunaj povprečne letne temperature in jih nariši. Nariši tudi *negotovost* (interval zaupanja) vsake meritve - je že del podatkov!!!.
+
+Namig: za delo z datumi je dober paket `lubridate`. Najdi cheat sheet (Google), če je kaj koristnega za tvoj problem.
+
+Postopek (dogovor):
+
+```{r}
+
+
+```
+
+Kdaj postanejo meritve koliko-toliko zanesljive? 
+
+
+_________________________________
+### Naloga 1.3
+
+Približaj del grafa, ko meritve postanejo zanesljive. Ugotovi, ali kje pride do "preskoka" v rasti temperatur. Graf "spimpaj", da bodo pravilno imenovane osi in si ga shrani v objekt `graph_temp` za kasneje.
+
+Postopek (dogovor):
+  - ni poreben poseben dogovor.
+  - dodaj xlim, ylim, da prikaže del grafa, ki ga želimo. Shrani.
+
+
+```{r}
+graph_temp= #...
+  
+  
+
+```
+
+Kdaj pride do "preskoka" v rasti temperature? 
+
+
+___________________________
+___________________________
+
+
+# 2. Razišči rast populacije človeštva in izpustov toplogrednih plinov.
+
+Danes večina strokovnjakov pripisuje dvig temperature aktivnosti človeštva. Poglejmo skozi podatke, ali se je v človeštvu kaj spremenilo v zadnjih stoletjih, kar bi lahko povzročilo dvig temperature?
+
+Najprej poglejmo rast človeške populacije v Holocenu. 
+
+### Podatki2.1: Rast človeške populacije v zadnjih 12000 letih
+
+Ker v pradavnini statistični uradi niso preveč dobro delali, so za daljnjo preteklost seveda samo ocene. :-) Preberi podatke iz `WorldPopulationGrowth.csv` in jih pospravi v objekt `PopGrowth`
+
+```{r}
+PopGrowth = #...
+  
+```
+
+_________________________________
+### Naloga 2.1
+
+Nariši graf rasti človeške populacije v Holocenu. Potem pa še en graf za zadnjih 200 let. Graf za zadnjih 200 let "spimpaj", da bo lep in shrani za kasneje kot `graph_pop`.
+
+postopek:
+ - dogovor
+ - lahko filtriraš leta, lahko pa kar uporabiš xlim
+
+```{r fig.width=4, fig.height=3}
+graph_pop= #...
+
+```
+
+Ali nas je kaj več? :)
+
+
+_________________________________
+### Naloga 2.2
+
+Ob tem, da človeštvo raste, pa se tudi razvijamo in vedno več trošimo. Poglejmo še to.
+
+- Naloži podatke iz `CO2Emissions_World_2024.csv` v objekt `co2world`. 
+- Naredi graf rasti skupnih CO2 izpustov skozi čas in mu daj ime `graph_co2`
+- Pa še en graf za izpuste CO2 na prebivalca in mu day ime `graph_co2_percapita`.
+- Oba grafa izriši.
+
+*Podatki so pripravljeni iz podatkov "Our World in Data", več o podatkih kasneje*
+
+Postopek (dogovor):
+
+```{r}
+Co2World = #...
+  
+```
+
+```{r}
+graph_co2 = #...
+
+graph_co2_percapita = #...
+
+```
+
+Ali vidiš kakšno anomalijo v zadnjem desetletju? Lahko uganeš zakaj?
+
+_________________________________
+### Naloga 2.3
+
+Sestavimo grafe - sestavi grafe, ki smo jih shranili, da jih vse vidimo naenkrat. Knjižnice, ki to znajo, so npr. "gridExtra" ali "ggpubr". Google / chat GPT.
+
+```{r}
+
+
+```
+
+Kako je videti? Je korelacija? Debata!
+
+
+_________________________________
+_________________________________
+
+# 3. Kdo in kaj najbolj prispeva k izpustu toplogrednih plinov?
+
+Glavni vir toplogrednih plinov je naša uporaba fosilnih goriv. Izvirov je več, pa tudi poraba je različna po državah. Poglejmo.
+
+_________________________________
+
+### Podatki 3: Izpusti toplogrednih plinov.
+
+Podatke najdete v datoteki `owid-co2-data-2024.xlsx`.
+
+- Odpri podatke v Excelu in si jih oglej.
+- Podatke preberi v objekt`GHGEmissions`.
+- "Metapodatke" preberi v objekt `GHGMetadata`.
+- Preveri, ali je vse dobro uvoženo.
+
+```{r}
+GHGEmissions = #...
+  
+GHGMetadata = #...
+```
+**Data on CO2 and Greenhouse Gas Emissions by Our World in Data**
+Our complete CO2 and Greenhouse Gas Emissions dataset is a collection of key metrics maintained by Our World in Data. It is updated regularly and includes data on CO2 emissions (annual, per capita, cumulative and consumption-based), other greenhouse gases, energy mix, and other relevant metrics.
+
+Povezava: https://github.com/owid/co2-data
+Opisi stolpcev: https://github.com/owid/co2-data/blob/master/owid-co2-codebook.csv
+
+_________________________________
+Naloga 3.1
+
+Najprej poglejmo katere države največ prispevajo k izpustu toplogrednih plinov. Najdi 10 držav, ki so od leta 1949 skupno izpustile največ CO2 v atmosfero. Katere države so ključne? Katere zaradi svoje velikosti, katere zaradi svoje pretirane potrošnje?
+
+Postopek:
+* GHG ni ok, ker je za dosti držav manjka. Uporabi CO2
+* Zraven so tudi večje aglomeracije (EUROPE, OECD, World...). Kako bi to odstranili?
+
+
+```{r}
+
+
+```
+
+_________________________________
+Naloga 3.2
+
+Ali je rast CO2 izpustov enakomerna za vse ključne države, ali se je s časom spreminjala? Nariši graf izpustov CO2, s svojo linijo za vsako izmed teh ključnih držav.
+
+Postopek:
+
+```{r}
+
+
+```
+
+Kako je videti?
+
+_________________________________
+Naloga 3.3
+
+Imamo več pomembnih virov CO2, ključni so nafta, zemeljski plin, "flaring" (sežiganje odpadnih plinov v industriji nafte) in proizvodnja cementa. 
+
+-Nariši graf kako se je produkcija CO2 globalno spreminjala skozi čas za vsako izmed teh industrij.
+
+Predlog: podatke si lahko s "pivot_longer" pretvorite v dolgo obliko za risanje. Seveda po tem ko grupirate in seštejete.
+
+Postopek:
+
+```{r}
+
+
+```
+
+Kaj najbolj prispeva? Kje je največja sprememba?
+
+_________________________________
+Naloga 3.4
+
+Podatke bomo lažje raziskovali, če si naredimo funkcijo, s katero bomo lahko graf pogledali za vsako državo posebej ali za nek **vektor** držav (npr c("Germany", "Austria", "France"). 
+
+Vzami kodo iz 3.3 in jo predelaj, da bo narisala ta graf za eno/več držav, potem pa še ime teh držav dala v naslov grafa. Potem vse skupaj "zavij" v funkcijo, ki bo kot argument dobila podatke in vektor držav in vrnila graf.
+
+Funkcija "cat()" zalepi vektor besed v en string.
+
+```{r}
+plot_emissions = function() #....
+```
+
+_________________________________
+Naloga 3.5
+
+Uporabi funkcijo iz 3.4 in zanko ter nariši grafe za vse ključne države iz 3.1 (za vsako državo en graf). Grafe pospravi z logičnimi imeni v direktorij "Grafi".
+
+```{r}
+
+```
+
