@@ -1,4 +1,4 @@
-# R-napredne-vsebine
+# Napredne vsebine za učenje programskega jezika R za biologe
 
 Študijsko gradivo za učenje programskega jezika R in analize podatkov za biologe, napredne vsebine.
 
