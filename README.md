@@ -20,6 +20,8 @@ Učni materiali so praktične vaje za učenje programskega jezika R in analize p
 Vaje so zelo različne, od razmeroma osnovnih do precej naprednih vsebin. Nekaterih verjetno v naslednjih letih izvajanja predmeta ne bom uporabljal, so pa tukaj za uporabo v prihodnje ali če jih bo potreboval kdo drug. 
 
 ### Uporaba
+Vaje so namenjene študentom, ki že znajo osnove R-a.
+
 Vaje izvajam tako, da študenti praktično delajo za računalnikom z vodenjem in pomočjo profesorja. Nekatere vaje so strukturirane, nekatere pa odprte in je namen, da študenti čim bolj samostojno izpeljejo analizo dejanskih podatkov. Oznake so [STRUKTURIRANO] in [SAMOSTOJNO]
 
 Samostojne vaje običajno izvajam v parih - en študent je "krmar" in skrbi za tipkanje kode, drugi pa "navigator" in išče ideje po Internetu, pomaga pri reševanju itd. Po vsakem koraku študenta vlogi zamenjata.
