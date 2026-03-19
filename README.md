@@ -1,5 +1,6 @@
 # R-napredne-vsebine
-Študijsko gradivo za učenje programskega jezika R za biologe, napredne vsebine.
+
+Študijsko gradivo za učenje programskega jezika R in analize podatkov za biologe, napredne vsebine.
 
 **Univerza v Ljubljani, Biotehniška fakulteta**
 
@@ -12,7 +13,6 @@ Sodobni pristopi k analizi podatkov v biologiji (Biologija1, 2. letnik, izbirni)
 **Avtor: Tomaž Skrbinšek**
 
 **Kontakt: tomaz.skrbinsek@bf.uni-lj.si**
-
 
 ### Vsebina
 Učni materiali so praktične vaje za učenje programskega jezika R in analize podatkov. Ker so tarčna publika študenti biologije, so primeri bolj biološko obarvani, je pa nedvomno uporabno tudi za druge profile študentov.
