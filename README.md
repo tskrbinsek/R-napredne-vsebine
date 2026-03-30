@@ -15,9 +15,7 @@ Sodobni pristopi k analizi podatkov v biologiji (Biologija1, 2. letnik, izbirni)
 **Kontakt: tomaz.skrbinsek@bf.uni-lj.si**
 
 ### Vsebina
-Učno gradivo so praktične vaje za učenje programskega jezika R in analize podatkov. Ker so tarčna publika študenti biologije, so primeri bolj biološko obarvani, je pa nedvomno uporabno tudi za druge profile študentov.
-
-Vaje so zelo različne, od razmeroma osnovnih do precej naprednih vsebin. Nekaterih verjetno v naslednjih letih izvajanja predmeta ne bom uporabljal, so pa tukaj za uporabo v prihodnje ali če jih bo potreboval kdo drug. 
+Učno gradivo so praktične vaje za učenje programskega jezika R in analize podatkov. Vaje so zelo različne, od razmeroma osnovnih do precej naprednih vsebin. R Markdown datoteke z navodili, ustrezni podatki, rešitve. Pričakuje se, da študenti že znajo osnove R-a. 
 
 ### Uporaba
 Vaje so namenjene študentom, ki že znajo osnove R-a.
